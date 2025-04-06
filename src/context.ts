@@ -61,6 +61,11 @@ export class MessageContextImpl
   text?: string;
   command?: string;
   commandPayload?: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  username?: string;
+  name?: string;
 
   constructor(bot: Bot, update: Update) {
     super(bot, update);
@@ -69,6 +74,19 @@ export class MessageContextImpl
     this.chatId = this.message.chat.id;
     this.topicId = this.message.message_thread_id;
     this.text = this.message.text;
+
+    // Set user properties if the message has a sender
+    if (this.message.from) {
+      this.firstName = this.message.from.first_name;
+      this.lastName = this.message.from.last_name;
+      this.username = this.message.from.username;
+      
+      // Create fullName from first and last name
+      this.fullName = this.firstName + (this.lastName ? ` ${this.lastName}` : '');
+      
+      // Create name property that combines fullName and username
+      this.name = this.fullName + (this.username ? ` (@${this.username})` : '');
+    }
 
     // Parse command if present
     if (this.text && this.text.startsWith('/')) {
@@ -286,6 +304,11 @@ export class CallbackQueryContextImpl
   chatId?: number | string;
   topicId?: number;
   callbackData?: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  username?: string;
+  name?: string;
 
   constructor(bot: Bot, update: Update) {
     super(bot, update);
@@ -295,6 +318,17 @@ export class CallbackQueryContextImpl
     this.chatId = this.message?.chat.id;
     this.topicId = this.message?.message_thread_id;
     this.callbackData = this.callbackQuery.data;
+    
+    // Set user properties from the user who sent the callback query
+    this.firstName = this.callbackQuery.from.first_name;
+    this.lastName = this.callbackQuery.from.last_name;
+    this.username = this.callbackQuery.from.username;
+    
+    // Create fullName from first and last name
+    this.fullName = this.firstName + (this.lastName ? ` ${this.lastName}` : '');
+    
+    // Create name property that combines fullName and username
+    this.name = this.fullName + (this.username ? ` (@${this.username})` : '');
   }
 
   /**
@@ -400,6 +434,11 @@ export class EditedMessageContextImpl
   chatId: number | string;
   topicId?: number;
   text?: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  username?: string;
+  name?: string;
 
   constructor(bot: Bot, update: Update) {
     super(bot, update);
@@ -408,6 +447,19 @@ export class EditedMessageContextImpl
     this.chatId = this.editedMessage.chat.id;
     this.topicId = this.editedMessage.message_thread_id;
     this.text = this.editedMessage.text;
+    
+    // Set user properties if the message has a sender
+    if (this.editedMessage.from) {
+      this.firstName = this.editedMessage.from.first_name;
+      this.lastName = this.editedMessage.from.last_name;
+      this.username = this.editedMessage.from.username;
+      
+      // Create fullName from first and last name
+      this.fullName = this.firstName + (this.lastName ? ` ${this.lastName}` : '');
+      
+      // Create name property that combines fullName and username
+      this.name = this.fullName + (this.username ? ` (@${this.username})` : '');
+    }
   }
 
   /**
@@ -484,6 +536,13 @@ export class ChatMemberUpdateContextImpl
 {
   chatMemberUpdate: ChatMemberUpdated;
   updateType: "chat_member" | "my_chat_member";
+  userId: number;
+  chatId: number | string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  username?: string;
+  name?: string;
 
   constructor(
     bot: Bot,
@@ -493,6 +552,22 @@ export class ChatMemberUpdateContextImpl
     super(bot, update);
     this.updateType = updateType;
     this.chatMemberUpdate = update[updateType]!;
+    
+    // Set user and chat IDs
+    this.userId = this.chatMemberUpdate.new_chat_member.user.id;
+    this.chatId = this.chatMemberUpdate.chat.id;
+    
+    // Set user properties from the user being updated
+    const user = this.chatMemberUpdate.new_chat_member.user;
+    this.firstName = user.first_name;
+    this.lastName = user.last_name;
+    this.username = user.username;
+    
+    // Create fullName from first and last name
+    this.fullName = this.firstName + (this.lastName ? ` ${this.lastName}` : '');
+    
+    // Create name property that combines fullName and username
+    this.name = this.fullName + (this.username ? ` (@${this.username})` : '');
   }
 
   /**

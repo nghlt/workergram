@@ -1,20 +1,23 @@
-import { Update } from '@grammyjs/types';
+import { Update } from "@grammyjs/types";
 
 /**
  * Parse command and arguments from a message text
  * @param text Message text
  * @returns An object with command and args properties
  */
-export function parseCommand(text: string): { command: string; args: string[] } {
+export function parseCommand(text: string): {
+  command: string;
+  args: string[];
+} {
   const match = text.match(/^\/([^\s@]+)(?:@(\S+))?(?:\s+(.*))?$/);
-  
+
   if (!match) {
-    return { command: '', args: [] };
+    return { command: "", args: [] };
   }
-  
+
   const command = match[1];
   const args = match[3] ? match[3].split(/\s+/) : [];
-  
+
   return { command, args };
 }
 
@@ -24,14 +27,18 @@ export function parseCommand(text: string): { command: string; args: string[] } 
  * @returns Text from the update or undefined if not found
  */
 export function extractText(update: Update): string | undefined {
-  if ('message' in update && update.message && 'text' in update.message) {
+  if ("message" in update && update.message && "text" in update.message) {
     return update.message.text;
   }
-  
-  if ('callback_query' in update && update.callback_query && update.callback_query.data) {
+
+  if (
+    "callback_query" in update &&
+    update.callback_query &&
+    update.callback_query.data
+  ) {
     return update.callback_query.data;
   }
-  
+
   return undefined;
 }
 
@@ -41,22 +48,26 @@ export function extractText(update: Update): string | undefined {
  * @returns Chat ID or undefined if not found
  */
 export function extractChatId(update: Update): number | string | undefined {
-  if ('message' in update && update.message) {
+  if ("message" in update && update.message) {
     return update.message.chat.id;
   }
-  
-  if ('callback_query' in update && update.callback_query && update.callback_query.message) {
+
+  if (
+    "callback_query" in update &&
+    update.callback_query &&
+    update.callback_query.message
+  ) {
     return update.callback_query.message.chat.id;
   }
-  
-  if ('chat_member' in update && update.chat_member) {
+
+  if ("chat_member" in update && update.chat_member) {
     return update.chat_member.chat.id;
   }
-  
-  if ('my_chat_member' in update && update.my_chat_member) {
+
+  if ("my_chat_member" in update && update.my_chat_member) {
     return update.my_chat_member.chat.id;
   }
-  
+
   return undefined;
 }
 
@@ -66,25 +77,28 @@ export function extractChatId(update: Update): number | string | undefined {
  * @returns User ID or undefined if not found
  */
 export function extractUserId(update: Update): number | undefined {
-  if ('message' in update && update.message && update.message.from) {
+  if ("message" in update && update.message && update.message.from) {
     return update.message.from.id;
   }
-  
-  if ('callback_query' in update && update.callback_query && update.callback_query.from) {
+
+  if (
+    "callback_query" in update &&
+    update.callback_query &&
+    update.callback_query.from
+  ) {
     return update.callback_query.from.id;
   }
-  
-  if ('chat_member' in update && update.chat_member) {
+
+  if ("chat_member" in update && update.chat_member) {
     return update.chat_member.new_chat_member.user.id;
   }
-  
-  if ('my_chat_member' in update && update.my_chat_member) {
+
+  if ("my_chat_member" in update && update.my_chat_member) {
     return update.my_chat_member.new_chat_member.user.id;
   }
-  
+
   return undefined;
 }
-
 
 /**
  * Create a FormData object from a params object
@@ -93,22 +107,21 @@ export function extractUserId(update: Update): number | undefined {
  */
 export function createFormData(params: Record<string, any>): FormData {
   const formData = new FormData();
-  
+
   for (const [key, value] of Object.entries(params)) {
     if (value === undefined) continue;
-    
+
     if (value instanceof File) {
       formData.append(key, value, value.name);
-    } else if (typeof value === 'object' && value !== null) {
+    } else if (typeof value === "object" && value !== null) {
       formData.append(key, JSON.stringify(value));
     } else {
       formData.append(key, String(value));
     }
   }
-  
+
   return formData;
 }
-
 
 /**
  * Get the mime type for a file based on its name
@@ -116,33 +129,33 @@ export function createFormData(params: Record<string, any>): FormData {
  * @returns The mime type or application/octet-stream if unknown
  */
 export function getMimeType(fileName: string): string {
-  const extension = fileName.split('.').pop()?.toLowerCase();
-  
+  const extension = fileName.split(".").pop()?.toLowerCase();
+
   const mimeTypes: Record<string, string> = {
-    'jpg': 'image/jpeg',
-    'jpeg': 'image/jpeg',
-    'png': 'image/png',
-    'gif': 'image/gif',
-    'webp': 'image/webp',
-    'mp4': 'video/mp4',
-    'mp3': 'audio/mpeg',
-    'pdf': 'application/pdf',
-    'doc': 'application/msword',
-    'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'xls': 'application/vnd.ms-excel',
-    'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'zip': 'application/zip',
-    'json': 'application/json',
-    'txt': 'text/plain',
-    'html': 'text/html',
-    'css': 'text/css',
-    'js': 'text/javascript',
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    gif: "image/gif",
+    webp: "image/webp",
+    mp4: "video/mp4",
+    mp3: "audio/mpeg",
+    pdf: "application/pdf",
+    doc: "application/msword",
+    docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    xls: "application/vnd.ms-excel",
+    xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    zip: "application/zip",
+    json: "application/json",
+    txt: "text/plain",
+    html: "text/html",
+    css: "text/css",
+    js: "text/javascript",
   };
-  
+
   if (!extension || !mimeTypes[extension]) {
-    return 'application/octet-stream';
+    return "application/octet-stream";
   }
-  
+
   return mimeTypes[extension];
 }
 
@@ -169,9 +182,8 @@ export function formatFileSize(bytes: number): string {
  * @returns Whether the value is a Promise
  */
 export function isPromise(value: any): value is Promise<any> {
-  return !!value && typeof value.then === 'function';
+  return !!value && typeof value.then === "function";
 }
-
 
 /**
  * Escape Markdown v2 special characters in a string
@@ -181,9 +193,8 @@ export function isPromise(value: any): value is Promise<any> {
 export function escapeMarkdown(text: string): string {
   // Characters that need to be escaped in MarkdownV2:
   // '_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'
-  return text.replace(/([_*[\]()~`>#+=|{}.!\\])/g, '\\$1');
+  return text.replace(/([_*[\]()~`>#+=|{}.!\\])/g, "\\$1");
 }
-
 
 /**
  * Escape special characters for HTML formatting
@@ -192,10 +203,10 @@ export function escapeMarkdown(text: string): string {
  */
 export function escapeHTML(text: string): string {
   return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 /**
@@ -204,5 +215,5 @@ export function escapeHTML(text: string): string {
  * @returns A promise that resolves after the specified time
  */
 export function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

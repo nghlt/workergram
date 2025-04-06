@@ -187,6 +187,11 @@ export interface MessageContext extends BaseContext {
   text?: string;
   command?: string;
   commandPayload?: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  username?: string;
+  name?: string;
   reply(
     messageText: string,
     messageOptions?: SendMessageOptions,
@@ -236,6 +241,11 @@ export interface CallbackQueryContext extends BaseContext {
   chatId?: number | string;
   topicId?: number;
   callbackData?: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  username?: string;
+  name?: string;
   answer(text?: string, options?: AnswerCallbackQueryOptions): Promise<boolean>;
   editText(
     messageText: string,
@@ -255,6 +265,11 @@ export interface EditedMessageContext extends BaseContext {
   chatId: number | string;
   topicId?: number;
   text?: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  username?: string;
+  name?: string;
   reply(
     messageText: string,
     messageOptions?: SendMessageOptions,
@@ -282,6 +297,13 @@ export interface ChatMemberUpdateContext extends BaseContext {
   isDemoted(): boolean;
   user: User;
   chat: Chat;
+  userId: number;
+  chatId: number | string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  username?: string;
+  name?: string;
   reply(
     messageText: string,
     messageOptions?: SendMessageOptions,
