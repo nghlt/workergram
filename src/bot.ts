@@ -21,6 +21,10 @@ import {
   CopyMessageOptions,
   AnswerCallbackQueryOptions,
   SetWebhookOptions,
+  CreateForumTopicOptions,
+  EditForumTopicOptions,
+  ForumTopic,
+  Sticker,
   ChatMember,
   UpdateType,
 } from "./types";
@@ -569,5 +573,137 @@ export class Bot {
       user_id: userId,
       custom_title: customTitle,
     });
+  }
+
+  /**
+   * Create a new forum topic in a supergroup chat
+   * @param chatId Chat ID where to create the forum topic
+   * @param name Name of the topic, 1-128 characters
+   * @param options Additional options for creating the forum topic
+   * @returns Information about the created forum topic
+   */
+  async createForumTopic(
+    chatId: number | string,
+    name: string,
+    options: CreateForumTopicOptions = {},
+  ): Promise<ForumTopic> {
+    return this._callApi<ForumTopic>("createForumTopic", {
+      chat_id: chatId,
+      name,
+      ...options,
+    });
+  }
+
+  /**
+   * Edit a forum topic in a supergroup chat
+   * @param chatId Chat ID where the forum topic exists
+   * @param messageThreadId Identifier of the forum topic
+   * @param options Options to update (name and/or icon_custom_emoji_id)
+   * @returns True on success
+   */
+  async editForumTopic(
+    chatId: number | string,
+    messageThreadId: number,
+    options: EditForumTopicOptions,
+  ): Promise<boolean> {
+    return this._callApi<boolean>("editForumTopic", {
+      chat_id: chatId,
+      message_thread_id: messageThreadId,
+      ...options,
+    });
+  }
+
+  /**
+   * Close an open forum topic
+   * @param chatId Chat ID where the forum topic exists
+   * @param messageThreadId Identifier of the forum topic
+   * @returns True on success
+   */
+  async closeForumTopic(
+    chatId: number | string,
+    messageThreadId: number,
+  ): Promise<boolean> {
+    return this._callApi<boolean>("closeForumTopic", {
+      chat_id: chatId,
+      message_thread_id: messageThreadId,
+    });
+  }
+
+  /**
+   * Reopen a closed forum topic
+   * @param chatId Chat ID where the forum topic exists
+   * @param messageThreadId Identifier of the forum topic
+   * @returns True on success
+   */
+  async reopenForumTopic(
+    chatId: number | string,
+    messageThreadId: number,
+  ): Promise<boolean> {
+    return this._callApi<boolean>("reopenForumTopic", {
+      chat_id: chatId,
+      message_thread_id: messageThreadId,
+    });
+  }
+
+  /**
+   * Delete a forum topic along with all its messages
+   * @param chatId Chat ID where the forum topic exists
+   * @param messageThreadId Identifier of the forum topic
+   * @returns True on success
+   */
+  async deleteForumTopic(
+    chatId: number | string,
+    messageThreadId: number,
+  ): Promise<boolean> {
+    return this._callApi<boolean>("deleteForumTopic", {
+      chat_id: chatId,
+      message_thread_id: messageThreadId,
+    });
+  }
+
+  /**
+   * Unpin all messages in a forum topic
+   * @param chatId Chat ID where the forum topic exists
+   * @param messageThreadId Identifier of the forum topic
+   * @returns True on success
+   */
+  async unpinAllForumTopicMessages(
+    chatId: number | string,
+    messageThreadId: number,
+  ): Promise<boolean> {
+    return this._callApi<boolean>("unpinAllForumTopicMessages", {
+      chat_id: chatId,
+      message_thread_id: messageThreadId,
+    });
+  }
+
+  /**
+   * Hide the 'General' topic in a forum supergroup chat
+   * @param chatId Chat ID where to hide the general forum topic
+   * @returns True on success
+   */
+  async hideGeneralForumTopic(chatId: number | string): Promise<boolean> {
+    return this._callApi<boolean>("hideGeneralForumTopic", {
+      chat_id: chatId,
+    });
+  }
+
+  /**
+   * Unhide the 'General' topic in a forum supergroup chat
+   * @param chatId Chat ID where to unhide the general forum topic
+   * @returns True on success
+   */
+  async unhideGeneralForumTopic(chatId: number | string): Promise<boolean> {
+    return this._callApi<boolean>("unhideGeneralForumTopic", {
+      chat_id: chatId,
+    });
+  }
+
+  /**
+   * Get custom emoji stickers that can be used as forum topic icons
+   * @returns Array of stickers that can be used as forum topic icons
+   */
+  async getForumTopicIconStickers(): Promise<Sticker[]> {
+    return this._callApi<Sticker[]>("getForumTopicIconStickers");
   }
 }

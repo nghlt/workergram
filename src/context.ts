@@ -17,6 +17,9 @@ import {
   SendPhotoOptions,
   SendDocumentOptions,
   AnswerCallbackQueryOptions,
+  CreateForumTopicOptions,
+  EditForumTopicOptions,
+  ForumTopic,
 } from "./types";
 
 /**
@@ -187,6 +190,86 @@ export class MessageContextImpl
     onlyIfBanned?: boolean,
   ): Promise<boolean> {
     return this.bot.unbanChatMember(this.message.chat.id, userId, onlyIfBanned);
+  }
+
+  // Forum topic management methods
+  
+  /**
+   * Create a new forum topic in the current chat
+   * @param name Name for the forum topic
+   * @param options Additional options for forum topic creation
+   * @returns Information about the created forum topic
+   */
+  async createForumTopic(
+    name: string,
+    options: CreateForumTopicOptions = {},
+  ): Promise<ForumTopic> {
+    return this.bot.createForumTopic(this.message.chat.id, name, options);
+  }
+
+  /**
+   * Edit a forum topic in the current chat
+   * @param messageThreadId Identifier of the forum topic
+   * @param options Options to update (name and/or icon_custom_emoji_id)
+   * @returns True on success
+   */
+  async editForumTopic(
+    messageThreadId: number,
+    options: EditForumTopicOptions,
+  ): Promise<boolean> {
+    return this.bot.editForumTopic(this.message.chat.id, messageThreadId, options);
+  }
+
+  /**
+   * Close an open forum topic
+   * @param messageThreadId Identifier of the forum topic
+   * @returns True on success
+   */
+  async closeForumTopic(messageThreadId: number): Promise<boolean> {
+    return this.bot.closeForumTopic(this.message.chat.id, messageThreadId);
+  }
+
+  /**
+   * Reopen a closed forum topic
+   * @param messageThreadId Identifier of the forum topic
+   * @returns True on success
+   */
+  async reopenForumTopic(messageThreadId: number): Promise<boolean> {
+    return this.bot.reopenForumTopic(this.message.chat.id, messageThreadId);
+  }
+
+  /**
+   * Delete a forum topic along with all its messages
+   * @param messageThreadId Identifier of the forum topic
+   * @returns True on success
+   */
+  async deleteForumTopic(messageThreadId: number): Promise<boolean> {
+    return this.bot.deleteForumTopic(this.message.chat.id, messageThreadId);
+  }
+
+  /**
+   * Unpin all messages in a forum topic
+   * @param messageThreadId Identifier of the forum topic
+   * @returns True on success
+   */
+  async unpinAllForumTopicMessages(messageThreadId: number): Promise<boolean> {
+    return this.bot.unpinAllForumTopicMessages(this.message.chat.id, messageThreadId);
+  }
+
+  /**
+   * Hide the 'General' topic in a forum supergroup chat
+   * @returns True on success
+   */
+  async hideGeneralForumTopic(): Promise<boolean> {
+    return this.bot.hideGeneralForumTopic(this.message.chat.id);
+  }
+
+  /**
+   * Unhide the 'General' topic in a forum supergroup chat
+   * @returns True on success
+   */
+  async unhideGeneralForumTopic(): Promise<boolean> {
+    return this.bot.unhideGeneralForumTopic(this.message.chat.id);
   }
 }
 

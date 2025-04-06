@@ -108,6 +108,37 @@ export interface Bot {
     customTitle: string,
   ): Promise<boolean>;
 
+  // Forum topic management methods
+  createForumTopic(
+    chatId: number | string,
+    name: string,
+    options?: CreateForumTopicOptions,
+  ): Promise<ForumTopic>;
+  editForumTopic(
+    chatId: number | string,
+    messageThreadId: number,
+    options: EditForumTopicOptions,
+  ): Promise<boolean>;
+  closeForumTopic(
+    chatId: number | string,
+    messageThreadId: number,
+  ): Promise<boolean>;
+  reopenForumTopic(
+    chatId: number | string,
+    messageThreadId: number,
+  ): Promise<boolean>;
+  deleteForumTopic(
+    chatId: number | string,
+    messageThreadId: number,
+  ): Promise<boolean>;
+  unpinAllForumTopicMessages(
+    chatId: number | string,
+    messageThreadId: number,
+  ): Promise<boolean>;
+  hideGeneralForumTopic(chatId: number | string): Promise<boolean>;
+  unhideGeneralForumTopic(chatId: number | string): Promise<boolean>;
+  getForumTopicIconStickers(): Promise<Sticker[]>;
+
   // Webhook methods
   setWebhook(url: string, options?: SetWebhookOptions): Promise<boolean>;
   deleteWebhook(dropPendingUpdates?: boolean): Promise<boolean>;
@@ -180,6 +211,22 @@ export interface MessageContext extends BaseContext {
     revokeMessages?: boolean,
   ): Promise<boolean>;
   unbanChatMember(userId: number, onlyIfBanned?: boolean): Promise<boolean>;
+  
+  // Forum topic management methods
+  createForumTopic(
+    name: string, 
+    options?: CreateForumTopicOptions
+  ): Promise<ForumTopic>;
+  editForumTopic(
+    messageThreadId: number,
+    options: EditForumTopicOptions
+  ): Promise<boolean>;
+  closeForumTopic(messageThreadId: number): Promise<boolean>;
+  reopenForumTopic(messageThreadId: number): Promise<boolean>;
+  deleteForumTopic(messageThreadId: number): Promise<boolean>;
+  unpinAllForumTopicMessages(messageThreadId: number): Promise<boolean>;
+  hideGeneralForumTopic(): Promise<boolean>;
+  unhideGeneralForumTopic(): Promise<boolean>;
 }
 
 export interface CallbackQueryContext extends BaseContext {
@@ -306,6 +353,37 @@ export interface SetWebhookOptions {
   allowed_updates?: string[];
   drop_pending_updates?: boolean;
   secret_token?: string;
+}
+
+export interface CreateForumTopicOptions {
+  icon_color?: number;
+  icon_custom_emoji_id?: string;
+}
+
+export interface EditForumTopicOptions {
+  name?: string;
+  icon_custom_emoji_id?: string;
+}
+
+export interface ForumTopic {
+  message_thread_id: number;
+  name: string;
+  icon_color?: number;
+  icon_custom_emoji_id?: string;
+}
+
+export interface Sticker {
+  file_id: string;
+  file_unique_id: string;
+  type: string;
+  width: number;
+  height: number;
+  is_animated: boolean;
+  is_video: boolean;
+  emoji?: string;
+  custom_emoji_id?: string;
+  thumbnail?: any;
+  [key: string]: any;
 }
 
 /**
