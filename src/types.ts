@@ -15,6 +15,19 @@ import {
 } from "@grammyjs/types";
 
 /**
+ * File interface for sending files to Telegram
+ * Can be file_id, URL, or a file upload
+ */
+export interface File {
+  file_id?: string;
+  url?: string;
+  filename?: string;
+  contentType?: string;
+  // We use any for binary data to avoid Node.js specific types
+  data?: any;
+}
+
+/**
  * Telegram update types
  */
 export type UpdateType = 
@@ -52,12 +65,12 @@ export interface Bot {
   ): Promise<Message>;
   sendPhoto(
     chatId: number | string,
-    photo: string | File,
+    photo: string,
     options?: SendPhotoOptions,
   ): Promise<Message>;
   sendDocument(
     chatId: number | string,
-    document: string | File,
+    document: string,
     options?: SendDocumentOptions,
   ): Promise<Message>;
   forwardMessage(
@@ -202,13 +215,21 @@ export interface MessageContext extends BaseContext {
   ): Promise<Message | boolean>;
   delete(): Promise<boolean>;
   replyWithPhoto(
-    photo: string | File,
+    photo: string,
     options?: SendPhotoOptions,
   ): Promise<Message>;
   replyWithDocument(
-    document: string | File,
+    document: string,
     options?: SendDocumentOptions,
   ): Promise<Message>;
+  forwardMessage(
+    toChatId: number | string,
+    options?: any,
+  ): Promise<Message>;
+  copyMessage(
+    toChatId: number | string,
+    options?: CopyMessageOptions,
+  ): Promise<{ message_id: number }>;
   getChat(): Promise<Chat>;
   banChatMember(
     userId: number,
@@ -276,13 +297,21 @@ export interface EditedMessageContext extends BaseContext {
   ): Promise<Message>;
   delete(): Promise<boolean>;
   replyWithPhoto(
-    photo: string | File,
+    photo: string,
     options?: SendPhotoOptions,
   ): Promise<Message>;
   replyWithDocument(
-    document: string | File,
+    document: string,
     options?: SendDocumentOptions,
   ): Promise<Message>;
+  forwardMessage(
+    toChatId: number | string,
+    options?: any,
+  ): Promise<Message>;
+  copyMessage(
+    toChatId: number | string,
+    options?: CopyMessageOptions,
+  ): Promise<{ message_id: number }>;
   getChat(): Promise<Chat>;
 }
 
@@ -312,53 +341,103 @@ export interface ChatMemberUpdateContext extends BaseContext {
   unbanUser(onlyIfBanned?: boolean): Promise<boolean>;
 }
 
+/**
+ * MessageEntity type for representing special entities in messages
+ */
+export interface MessageEntity {
+  type: 'mention' | 'hashtag' | 'cashtag' | 'bot_command' | 'url' | 
+        'email' | 'phone_number' | 'bold' | 'italic' | 'underline' | 
+        'strikethrough' | 'spoiler' | 'code' | 'pre' | 'text_link' | 
+        'text_mention' | 'custom_emoji';
+  offset: number;
+  length: number;
+  url?: string;         // For "text_link" only
+  user?: User;          // For "text_mention" only
+  language?: string;    // For "pre" only
+  custom_emoji_id?: string; // For "custom_emoji" only
+}
+
+/**
+ * Reply markup interface for various keyboard types
+ */
+export interface ReplyMarkup {
+  inline_keyboard?: Array<Array<{
+    text: string;
+    url?: string;
+    callback_data?: string;
+    web_app?: {url: string};
+    login_url?: {url: string; forward_text?: string; bot_username?: string; request_write_access?: boolean};
+    switch_inline_query?: string;
+    switch_inline_query_current_chat?: string;
+    callback_game?: {};
+    pay?: boolean;
+  }>>;
+  keyboard?: Array<Array<{
+    text: string;
+    request_contact?: boolean;
+    request_location?: boolean;
+    request_poll?: {type?: 'quiz' | 'regular'};
+    web_app?: {url: string};
+  }>>;
+  remove_keyboard?: boolean;
+  force_reply?: boolean;
+  input_field_placeholder?: string;
+  selective?: boolean;
+  one_time_keyboard?: boolean;
+  resize_keyboard?: boolean;
+  is_persistent?: boolean;
+}
+
 // API options types
 export interface SendMessageOptions {
+  message_thread_id?: number;        // Forum topic identifier
   parse_mode?: "Markdown" | "MarkdownV2" | "HTML";
-  entities?: any[];
+  entities?: MessageEntity[];
   disable_web_page_preview?: boolean;
   disable_notification?: boolean;
   protect_content?: boolean;
   reply_to_message_id?: number;
   allow_sending_without_reply?: boolean;
-  reply_markup?: any;
+  reply_markup?: ReplyMarkup;
 }
 
 export interface SendPhotoOptions {
+  message_thread_id?: number;        // Forum topic identifier
   caption?: string;
   parse_mode?: "Markdown" | "MarkdownV2" | "HTML";
-  caption_entities?: any[];
+  caption_entities?: MessageEntity[];
   has_spoiler?: boolean;
   disable_notification?: boolean;
   protect_content?: boolean;
   reply_to_message_id?: number;
   allow_sending_without_reply?: boolean;
-  reply_markup?: any;
+  reply_markup?: ReplyMarkup;
 }
 
 export interface SendDocumentOptions {
-  thumbnail?: string | File;
+  message_thread_id?: number;        // Forum topic identifier
+  thumbnail?: string;
   caption?: string;
   parse_mode?: "Markdown" | "MarkdownV2" | "HTML";
-  caption_entities?: any[];
+  caption_entities?: MessageEntity[];
   disable_content_type_detection?: boolean;
   disable_notification?: boolean;
   protect_content?: boolean;
   reply_to_message_id?: number;
   allow_sending_without_reply?: boolean;
-  reply_markup?: any;
+  reply_markup?: ReplyMarkup;
 }
 
 export interface CopyMessageOptions {
-  message_thread_id?: number;
+  message_thread_id?: number;        // Forum topic identifier
   caption?: string;
   parse_mode?: "Markdown" | "MarkdownV2" | "HTML";
-  caption_entities?: any[];
+  caption_entities?: MessageEntity[];
   disable_notification?: boolean;
   protect_content?: boolean;
   reply_to_message_id?: number;
   allow_sending_without_reply?: boolean;
-  reply_markup?: any;
+  reply_markup?: ReplyMarkup;
 }
 
 export interface AnswerCallbackQueryOptions {
@@ -369,7 +448,7 @@ export interface AnswerCallbackQueryOptions {
 }
 
 export interface SetWebhookOptions {
-  certificate?: string | File;
+  certificate?: string;
   ip_address?: string;
   max_connections?: number;
   allowed_updates?: string[];

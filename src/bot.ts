@@ -254,36 +254,19 @@ export class Bot {
   ): Promise<T> {
     const url = `${this.baseUrl}/${method}`;
 
-    // Determine if we need to use multipart/form-data
-    let hasFileParam = false;
-
-    for (const [_, value] of Object.entries(params)) {
-      if (value instanceof File) {
-        hasFileParam = true;
-        break;
-      }
-    }
-
+    // We'll always use JSON for requests, as we've simplified file handling to use strings
+    // instead of File objects. FormData is still available through createFormData
+    // in the edge cases where it might be needed.
     let response: Response;
 
-    if (hasFileParam) {
-      // Use FormData for file uploads
-      const formData = createFormData(params);
-
-      response = await fetch(url, {
-        method: "POST",
-        body: formData,
-      });
-    } else {
-      // Use JSON for regular requests
-      response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(params),
-      });
-    }
+    // Use JSON for all requests as we've simplified file handling to use strings
+    response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(params),
+    });
 
     const result = (await response.json()) as ApiResponse<T>;
 
@@ -363,13 +346,13 @@ export class Bot {
   /**
    * Send a photo to a chat
    * @param chatId Chat ID to send photo to
-   * @param photo Photo to send (file ID, URL, or File object)
+   * @param photo Photo to send (file ID or URL)
    * @param options Additional options for sending the photo
    * @returns The sent message
    */
   async sendPhoto(
     chatId: number | string,
-    photo: string | File,
+    photo: string,
     options: SendPhotoOptions = {},
   ): Promise<Message> {
     return this._callApi<Message>("sendPhoto", {
@@ -382,13 +365,13 @@ export class Bot {
   /**
    * Send a document to a chat
    * @param chatId Chat ID to send document to
-   * @param document Document to send (file ID, URL, or File object)
+   * @param document Document to send (file ID or URL)
    * @param options Additional options for sending the document
    * @returns The sent message
    */
   async sendDocument(
     chatId: number | string,
-    document: string | File,
+    document: string,
     options: SendDocumentOptions = {},
   ): Promise<Message> {
     return this._callApi<Message>("sendDocument", {

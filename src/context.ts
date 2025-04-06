@@ -16,6 +16,7 @@ import {
   SendMessageOptions,
   SendPhotoOptions,
   SendDocumentOptions,
+  CopyMessageOptions,
   AnswerCallbackQueryOptions,
   CreateForumTopicOptions,
   EditForumTopicOptions,
@@ -107,10 +108,18 @@ export class MessageContextImpl
     messageText: string,
     messageOptions: SendMessageOptions = {},
   ): Promise<Message> {
-    return this.bot.sendMessage(this.message.chat.id, messageText, {
+    // Automatically include message_thread_id if it exists and not already specified
+    const options: SendMessageOptions = {
       reply_to_message_id: this.message.message_id,
       ...messageOptions,
-    });
+    };
+    
+    // Add message_thread_id for forum topics if not already specified
+    if (this.topicId && !options.message_thread_id) {
+      options.message_thread_id = this.topicId;
+    }
+    
+    return this.bot.sendMessage(this.message.chat.id, messageText, options);
   }
 
   /**
@@ -142,17 +151,25 @@ export class MessageContextImpl
 
   /**
    * Send a photo in reply to the current message
-   * @param photo Photo to send (file ID, URL, or File object)
+   * @param photo Photo to send (file ID or URL)
    * @param options Additional options for sending the photo
    */
   async replyWithPhoto(
-    photo: string | File,
+    photo: string,
     options: SendPhotoOptions = {},
   ): Promise<Message> {
-    return this.bot.sendPhoto(this.message.chat.id, photo, {
+    // Automatically include message_thread_id if it exists and not already specified
+    const photoOptions: SendPhotoOptions = {
       reply_to_message_id: this.message.message_id,
       ...options,
-    });
+    };
+    
+    // Add message_thread_id for forum topics if not already specified
+    if (this.topicId && !photoOptions.message_thread_id) {
+      photoOptions.message_thread_id = this.topicId;
+    }
+    
+    return this.bot.sendPhoto(this.message.chat.id, photo, photoOptions);
   }
 
   /**
@@ -161,13 +178,61 @@ export class MessageContextImpl
    * @param options Additional options for sending the document
    */
   async replyWithDocument(
-    document: string | File,
+    document: string,
     options: SendDocumentOptions = {},
   ): Promise<Message> {
-    return this.bot.sendDocument(this.message.chat.id, document, {
+    // Automatically include message_thread_id if it exists and not already specified
+    const docOptions: SendDocumentOptions = {
       reply_to_message_id: this.message.message_id,
       ...options,
-    });
+    };
+    
+    // Add message_thread_id for forum topics if not already specified
+    if (this.topicId && !docOptions.message_thread_id) {
+      docOptions.message_thread_id = this.topicId;
+    }
+    
+    return this.bot.sendDocument(this.message.chat.id, document, docOptions);
+  }
+
+  /**
+   * Forward the current message to another chat
+   * @param toChatId Target chat ID to forward the message to
+   * @param options Additional options for forwarding the message
+   */
+  async forwardMessage(
+    toChatId: number | string,
+    options: any = {},
+  ): Promise<Message> {
+    // Automatically include message_thread_id if specified in options
+    const forwardOptions = { ...options };
+    
+    return this.bot.forwardMessage(
+      toChatId,
+      this.message.chat.id,
+      this.message.message_id,
+      forwardOptions
+    );
+  }
+
+  /**
+   * Copy the current message to another chat
+   * @param toChatId Target chat ID to copy the message to
+   * @param options Additional options for copying the message
+   */
+  async copyMessage(
+    toChatId: number | string,
+    options: CopyMessageOptions = {},
+  ): Promise<{ message_id: number }> {
+    // Automatically include message_thread_id if it exists and not already specified
+    const copyOptions: CopyMessageOptions = { ...options };
+    
+    return this.bot.copyMessage(
+      toChatId,
+      this.message.chat.id,
+      this.message.message_id,
+      copyOptions
+    );
   }
 
   /**
@@ -415,10 +480,18 @@ export class CallbackQueryContextImpl
       throw new Error("Cannot reply to message: no message in callback query");
     }
 
-    return this.bot.sendMessage(this.message.chat.id, messageText, {
+    // Automatically include message_thread_id if it exists and not already specified
+    const options: SendMessageOptions = {
       reply_to_message_id: this.message.message_id,
       ...messageOptions,
-    });
+    };
+    
+    // Add message_thread_id for forum topics if not already specified
+    if (this.topicId && !options.message_thread_id) {
+      options.message_thread_id = this.topicId;
+    }
+    
+    return this.bot.sendMessage(this.message.chat.id, messageText, options);
   }
 }
 
@@ -471,10 +544,18 @@ export class EditedMessageContextImpl
     messageText: string,
     messageOptions: SendMessageOptions = {},
   ): Promise<Message> {
-    return this.bot.sendMessage(this.editedMessage.chat.id, messageText, {
+    // Automatically include message_thread_id if it exists and not already specified
+    const options: SendMessageOptions = {
       reply_to_message_id: this.editedMessage.message_id,
       ...messageOptions,
-    });
+    };
+    
+    // Add message_thread_id for forum topics if not already specified
+    if (this.topicId && !options.message_thread_id) {
+      options.message_thread_id = this.topicId;
+    }
+    
+    return this.bot.sendMessage(this.editedMessage.chat.id, messageText, options);
   }
 
   /**
@@ -493,13 +574,21 @@ export class EditedMessageContextImpl
    * @param options Additional options for sending the photo
    */
   async replyWithPhoto(
-    photo: string | File,
+    photo: string,
     options: SendPhotoOptions = {},
   ): Promise<Message> {
-    return this.bot.sendPhoto(this.editedMessage.chat.id, photo, {
+    // Automatically include message_thread_id if it exists and not already specified
+    const photoOptions: SendPhotoOptions = {
       reply_to_message_id: this.editedMessage.message_id,
       ...options,
-    });
+    };
+    
+    // Add message_thread_id for forum topics if not already specified
+    if (this.topicId && !photoOptions.message_thread_id) {
+      photoOptions.message_thread_id = this.topicId;
+    }
+    
+    return this.bot.sendPhoto(this.editedMessage.chat.id, photo, photoOptions);
   }
 
   /**
@@ -508,13 +597,61 @@ export class EditedMessageContextImpl
    * @param options Additional options for sending the document
    */
   async replyWithDocument(
-    document: string | File,
+    document: string,
     options: SendDocumentOptions = {},
   ): Promise<Message> {
-    return this.bot.sendDocument(this.editedMessage.chat.id, document, {
+    // Automatically include message_thread_id if it exists and not already specified
+    const docOptions: SendDocumentOptions = {
       reply_to_message_id: this.editedMessage.message_id,
       ...options,
-    });
+    };
+    
+    // Add message_thread_id for forum topics if not already specified
+    if (this.topicId && !docOptions.message_thread_id) {
+      docOptions.message_thread_id = this.topicId;
+    }
+    
+    return this.bot.sendDocument(this.editedMessage.chat.id, document, docOptions);
+  }
+
+  /**
+   * Forward the edited message to another chat
+   * @param toChatId Target chat ID to forward the message to
+   * @param options Additional options for forwarding the message
+   */
+  async forwardMessage(
+    toChatId: number | string,
+    options: any = {},
+  ): Promise<Message> {
+    // Automatically include message_thread_id if specified in options
+    const forwardOptions = { ...options };
+    
+    return this.bot.forwardMessage(
+      toChatId,
+      this.editedMessage.chat.id,
+      this.editedMessage.message_id,
+      forwardOptions
+    );
+  }
+
+  /**
+   * Copy the edited message to another chat
+   * @param toChatId Target chat ID to copy the message to
+   * @param options Additional options for copying the message
+   */
+  async copyMessage(
+    toChatId: number | string,
+    options: CopyMessageOptions = {},
+  ): Promise<{ message_id: number }> {
+    // Automatically include message_thread_id if it exists and not already specified
+    const copyOptions: CopyMessageOptions = { ...options };
+    
+    return this.bot.copyMessage(
+      toChatId,
+      this.editedMessage.chat.id,
+      this.editedMessage.message_id,
+      copyOptions
+    );
   }
 
   /**

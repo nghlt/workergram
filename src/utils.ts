@@ -111,9 +111,7 @@ export function createFormData(params: Record<string, any>): FormData {
   for (const [key, value] of Object.entries(params)) {
     if (value === undefined) continue;
 
-    if (value instanceof File) {
-      formData.append(key, value, value.name);
-    } else if (typeof value === "object" && value !== null) {
+    if (typeof value === "object" && value !== null) {
       formData.append(key, JSON.stringify(value));
     } else {
       formData.append(key, String(value));
