@@ -2,17 +2,7 @@
  * Type definitions for the WorkerGram library
  */
 
-import {
-  Update,
-  User,
-  Chat,
-  Message,
-  CallbackQuery,
-  ChatMemberUpdated,
-  ChatPermissions,
-  WebhookInfo,
-  ChatMember,
-} from "@grammyjs/types";
+import { Update, User, Chat, Message, CallbackQuery, ChatMemberUpdated, ChatPermissions, WebhookInfo, ChatMember } from "@grammyjs/types";
 
 /**
  * File interface for sending files to Telegram
@@ -30,21 +20,21 @@ export interface File {
 /**
  * Telegram update types
  */
-export type UpdateType = 
-  | 'message'
-  | 'edited_message'
-  | 'channel_post'
-  | 'edited_channel_post'
-  | 'inline_query'
-  | 'chosen_inline_result'
-  | 'callback_query'
-  | 'shipping_query'
-  | 'pre_checkout_query'
-  | 'poll'
-  | 'poll_answer'
-  | 'my_chat_member'
-  | 'chat_member'
-  | 'chat_join_request';
+export type UpdateType =
+  | "message"
+  | "edited_message"
+  | "channel_post"
+  | "edited_channel_post"
+  | "inline_query"
+  | "chosen_inline_result"
+  | "callback_query"
+  | "shipping_query"
+  | "pre_checkout_query"
+  | "poll"
+  | "poll_answer"
+  | "my_chat_member"
+  | "chat_member"
+  | "chat_join_request";
 
 /**
  * Bot interface
@@ -58,96 +48,29 @@ export interface Bot {
    */
   callApi<T>(method: string, params?: Record<string, any>): Promise<T>;
   // Messaging methods
-  sendMessage(
-    chatId: number | string,
-    messageText: string,
-    messageOptions?: SendMessageOptions,
-  ): Promise<Message>;
-  sendPhoto(
-    chatId: number | string,
-    photo: string,
-    options?: SendPhotoOptions,
-  ): Promise<Message>;
-  sendDocument(
-    chatId: number | string,
-    document: string,
-    options?: SendDocumentOptions,
-  ): Promise<Message>;
-  forwardMessage(
-    chatId: number | string,
-    fromChatId: number | string,
-    messageId: number,
-    options?: any,
-  ): Promise<Message>;
-  copyMessage(
-    chatId: number | string,
-    fromChatId: number | string,
-    messageId: number,
-    options?: CopyMessageOptions,
-  ): Promise<{ message_id: number }>;
+  sendMessage(chatId: number | string, messageText: string, messageOptions?: SendMessageOptions): Promise<Message>;
+  sendPhoto(chatId: number | string, photo: string, options?: SendPhotoOptions): Promise<Message>;
+  sendDocument(chatId: number | string, document: string, options?: SendDocumentOptions): Promise<Message>;
+  forwardMessage(chatId: number | string, fromChatId: number | string, messageId: number, options?: any): Promise<Message>;
+  copyMessage(chatId: number | string, fromChatId: number | string, messageId: number, options?: CopyMessageOptions): Promise<{ message_id: number }>;
 
   // Interactive methods
-  answerCallbackQuery(
-    callbackQueryId: string,
-    options?: AnswerCallbackQueryOptions,
-  ): Promise<boolean>;
+  answerCallbackQuery(callbackQueryId: string, options?: AnswerCallbackQueryOptions): Promise<boolean>;
 
   // Chat management methods
-  banChatMember(
-    chatId: number | string,
-    userId: number,
-    untilDate?: number,
-    revokeMessages?: boolean,
-  ): Promise<boolean>;
-  unbanChatMember(
-    chatId: number | string,
-    userId: number,
-    onlyIfBanned?: boolean,
-  ): Promise<boolean>;
-  restrictChatMember(
-    chatId: number | string,
-    userId: number,
-    permissions: ChatPermissions,
-    untilDate?: number,
-  ): Promise<boolean>;
-  promoteChatMember(
-    chatId: number | string,
-    userId: number,
-    options?: any,
-  ): Promise<boolean>;
-  setChatAdministratorCustomTitle(
-    chatId: number | string,
-    userId: number,
-    customTitle: string,
-  ): Promise<boolean>;
+  banChatMember(chatId: number | string, userId: number, untilDate?: number, revokeMessages?: boolean): Promise<boolean>;
+  unbanChatMember(chatId: number | string, userId: number, onlyIfBanned?: boolean): Promise<boolean>;
+  restrictChatMember(chatId: number | string, userId: number, permissions: ChatPermissions, untilDate?: number): Promise<boolean>;
+  promoteChatMember(chatId: number | string, userId: number, options?: any): Promise<boolean>;
+  setChatAdministratorCustomTitle(chatId: number | string, userId: number, customTitle: string): Promise<boolean>;
 
   // Forum topic management methods
-  createForumTopic(
-    chatId: number | string,
-    name: string,
-    options?: CreateForumTopicOptions,
-  ): Promise<ForumTopic>;
-  editForumTopic(
-    chatId: number | string,
-    messageThreadId: number,
-    options: EditForumTopicOptions,
-  ): Promise<boolean>;
-  closeForumTopic(
-    chatId: number | string,
-    messageThreadId: number,
-  ): Promise<boolean>;
-  reopenForumTopic(
-    chatId: number | string,
-    messageThreadId: number,
-  ): Promise<boolean>;
-  deleteForumTopic(
-    chatId: number | string,
-    messageThreadId: number,
-  ): Promise<boolean>;
-  unpinAllForumTopicMessages(
-    chatId: number | string,
-    messageThreadId: number,
-  ): Promise<boolean>;
+  createForumTopic(chatId: number | string, name: string, options?: CreateForumTopicOptions): Promise<ForumTopic>;
+  editForumTopic(chatId: number | string, messageThreadId: number, options: EditForumTopicOptions): Promise<boolean>;
+  closeForumTopic(chatId: number | string, messageThreadId: number): Promise<boolean>;
+  reopenForumTopic(chatId: number | string, messageThreadId: number): Promise<boolean>;
+  deleteForumTopic(chatId: number | string, messageThreadId: number): Promise<boolean>;
+  unpinAllForumTopicMessages(chatId: number | string, messageThreadId: number): Promise<boolean>;
   hideGeneralForumTopic(chatId: number | string): Promise<boolean>;
   unhideGeneralForumTopic(chatId: number | string): Promise<boolean>;
   getForumTopicIconStickers(): Promise<Sticker[]>;
@@ -165,17 +88,9 @@ export interface Bot {
 // Event handlers
 export type MessageHandler = (ctx: MessageContext) => Promise<void> | void;
 export type EditedMessageHandler = (ctx: EditedMessageContext) => Promise<void> | void;
-export type CallbackQueryHandler = (
-  ctx: CallbackQueryContext,
-) => Promise<void> | void;
-export type ChatMemberUpdateHandler = (
-  ctx: ChatMemberUpdateContext,
-) => Promise<void> | void;
-export type GenericHandler<T> = (ctx: {
-  bot: Bot;
-  update: Update;
-  [key: string]: any;
-}) => Promise<void> | void;
+export type CallbackQueryHandler = (ctx: CallbackQueryContext) => Promise<void> | void;
+export type ChatMemberUpdateHandler = (ctx: ChatMemberUpdateContext) => Promise<void> | void;
+export type GenericHandler<T> = (ctx: { bot: Bot; update: Update; [key: string]: any }) => Promise<void> | void;
 
 // Event filter types
 export type FilterFunction = (update: Update) => boolean;
@@ -186,10 +101,7 @@ export type EventFilter = FilterFunction | RegExp | string | FilterObject;
 export interface BaseContext {
   bot: Bot;
   update: Update;
-  reply(
-    messageText: string,
-    messageOptions?: SendMessageOptions,
-  ): Promise<Message>;
+  reply(messageText: string, messageOptions?: SendMessageOptions): Promise<Message>;
 }
 
 export interface MessageContext extends BaseContext {
@@ -205,48 +117,20 @@ export interface MessageContext extends BaseContext {
   fullName?: string;
   username?: string;
   name?: string;
-  reply(
-    messageText: string,
-    messageOptions?: SendMessageOptions,
-  ): Promise<Message>;
-  editText(
-    messageText: string,
-    messageOptions?: SendMessageOptions,
-  ): Promise<Message | boolean>;
+  reply(messageText: string, messageOptions?: SendMessageOptions): Promise<Message>;
+  editText(messageText: string, messageOptions?: SendMessageOptions): Promise<Message | boolean>;
   delete(): Promise<boolean>;
-  replyWithPhoto(
-    photo: string,
-    options?: SendPhotoOptions,
-  ): Promise<Message>;
-  replyWithDocument(
-    document: string,
-    options?: SendDocumentOptions,
-  ): Promise<Message>;
-  forwardMessage(
-    toChatId: number | string,
-    options?: any,
-  ): Promise<Message>;
-  copyMessage(
-    toChatId: number | string,
-    options?: CopyMessageOptions,
-  ): Promise<{ message_id: number }>;
+  replyWithPhoto(photo: string, options?: SendPhotoOptions): Promise<Message>;
+  replyWithDocument(document: string, options?: SendDocumentOptions): Promise<Message>;
+  forwardMessage(toChatId: number | string, options?: any): Promise<Message>;
+  copyMessage(toChatId: number | string, options?: CopyMessageOptions): Promise<{ message_id: number }>;
   getChat(): Promise<Chat>;
-  banChatMember(
-    userId: number,
-    untilDate?: number,
-    revokeMessages?: boolean,
-  ): Promise<boolean>;
+  banChatMember(userId: number, untilDate?: number, revokeMessages?: boolean): Promise<boolean>;
   unbanChatMember(userId: number, onlyIfBanned?: boolean): Promise<boolean>;
-  
+
   // Forum topic management methods
-  createForumTopic(
-    name: string, 
-    options?: CreateForumTopicOptions
-  ): Promise<ForumTopic>;
-  editForumTopic(
-    messageThreadId: number,
-    options: EditForumTopicOptions
-  ): Promise<boolean>;
+  createForumTopic(name: string, options?: CreateForumTopicOptions): Promise<ForumTopic>;
+  editForumTopic(messageThreadId: number, options: EditForumTopicOptions): Promise<boolean>;
   closeForumTopic(messageThreadId: number): Promise<boolean>;
   reopenForumTopic(messageThreadId: number): Promise<boolean>;
   deleteForumTopic(messageThreadId: number): Promise<boolean>;
@@ -268,16 +152,10 @@ export interface CallbackQueryContext extends BaseContext {
   username?: string;
   name?: string;
   answer(text?: string, options?: AnswerCallbackQueryOptions): Promise<boolean>;
-  editText(
-    messageText: string,
-    messageOptions?: SendMessageOptions,
-  ): Promise<Message | boolean>;
+  editText(messageText: string, messageOptions?: SendMessageOptions): Promise<Message | boolean>;
   editReplyMarkup(replyMarkup: any, options?: any): Promise<Message | boolean>;
   deleteMessage(): Promise<boolean>;
-  reply(
-    messageText: string,
-    messageOptions?: SendMessageOptions,
-  ): Promise<Message>;
+  reply(messageText: string, messageOptions?: SendMessageOptions): Promise<Message>;
 }
 
 export interface EditedMessageContext extends BaseContext {
@@ -291,27 +169,12 @@ export interface EditedMessageContext extends BaseContext {
   fullName?: string;
   username?: string;
   name?: string;
-  reply(
-    messageText: string,
-    messageOptions?: SendMessageOptions,
-  ): Promise<Message>;
+  reply(messageText: string, messageOptions?: SendMessageOptions): Promise<Message>;
   delete(): Promise<boolean>;
-  replyWithPhoto(
-    photo: string,
-    options?: SendPhotoOptions,
-  ): Promise<Message>;
-  replyWithDocument(
-    document: string,
-    options?: SendDocumentOptions,
-  ): Promise<Message>;
-  forwardMessage(
-    toChatId: number | string,
-    options?: any,
-  ): Promise<Message>;
-  copyMessage(
-    toChatId: number | string,
-    options?: CopyMessageOptions,
-  ): Promise<{ message_id: number }>;
+  replyWithPhoto(photo: string, options?: SendPhotoOptions): Promise<Message>;
+  replyWithDocument(document: string, options?: SendDocumentOptions): Promise<Message>;
+  forwardMessage(toChatId: number | string, options?: any): Promise<Message>;
+  copyMessage(toChatId: number | string, options?: CopyMessageOptions): Promise<{ message_id: number }>;
   getChat(): Promise<Chat>;
 }
 
@@ -333,10 +196,7 @@ export interface ChatMemberUpdateContext extends BaseContext {
   fullName?: string;
   username?: string;
   name?: string;
-  reply(
-    messageText: string,
-    messageOptions?: SendMessageOptions,
-  ): Promise<Message>;
+  reply(messageText: string, messageOptions?: SendMessageOptions): Promise<Message>;
   banUser(untilDate?: number, revokeMessages?: boolean): Promise<boolean>;
   unbanUser(onlyIfBanned?: boolean): Promise<boolean>;
 }
@@ -345,15 +205,29 @@ export interface ChatMemberUpdateContext extends BaseContext {
  * MessageEntity type for representing special entities in messages
  */
 export interface MessageEntity {
-  type: 'mention' | 'hashtag' | 'cashtag' | 'bot_command' | 'url' | 
-        'email' | 'phone_number' | 'bold' | 'italic' | 'underline' | 
-        'strikethrough' | 'spoiler' | 'code' | 'pre' | 'text_link' | 
-        'text_mention' | 'custom_emoji';
+  type:
+    | "mention"
+    | "hashtag"
+    | "cashtag"
+    | "bot_command"
+    | "url"
+    | "email"
+    | "phone_number"
+    | "bold"
+    | "italic"
+    | "underline"
+    | "strikethrough"
+    | "spoiler"
+    | "code"
+    | "pre"
+    | "text_link"
+    | "text_mention"
+    | "custom_emoji";
   offset: number;
   length: number;
-  url?: string;         // For "text_link" only
-  user?: User;          // For "text_mention" only
-  language?: string;    // For "pre" only
+  url?: string; // For "text_link" only
+  user?: User; // For "text_mention" only
+  language?: string; // For "pre" only
   custom_emoji_id?: string; // For "custom_emoji" only
 }
 
@@ -361,24 +235,28 @@ export interface MessageEntity {
  * Reply markup interface for various keyboard types
  */
 export interface ReplyMarkup {
-  inline_keyboard?: Array<Array<{
-    text: string;
-    url?: string;
-    callback_data?: string;
-    web_app?: {url: string};
-    login_url?: {url: string; forward_text?: string; bot_username?: string; request_write_access?: boolean};
-    switch_inline_query?: string;
-    switch_inline_query_current_chat?: string;
-    callback_game?: {};
-    pay?: boolean;
-  }>>;
-  keyboard?: Array<Array<{
-    text: string;
-    request_contact?: boolean;
-    request_location?: boolean;
-    request_poll?: {type?: 'quiz' | 'regular'};
-    web_app?: {url: string};
-  }>>;
+  inline_keyboard?: Array<
+    Array<{
+      text: string;
+      url?: string;
+      callback_data?: string;
+      web_app?: { url: string };
+      login_url?: { url: string; forward_text?: string; bot_username?: string; request_write_access?: boolean };
+      switch_inline_query?: string;
+      switch_inline_query_current_chat?: string;
+      callback_game?: {};
+      pay?: boolean;
+    }>
+  >;
+  keyboard?: Array<
+    Array<{
+      text: string;
+      request_contact?: boolean;
+      request_location?: boolean;
+      request_poll?: { type?: "quiz" | "regular" };
+      web_app?: { url: string };
+    }>
+  >;
   remove_keyboard?: boolean;
   force_reply?: boolean;
   input_field_placeholder?: string;
@@ -390,7 +268,7 @@ export interface ReplyMarkup {
 
 // API options types
 export interface SendMessageOptions {
-  message_thread_id?: number;        // Forum topic identifier
+  message_thread_id?: number; // Forum topic identifier
   parse_mode?: "Markdown" | "MarkdownV2" | "HTML";
   entities?: MessageEntity[];
   disable_web_page_preview?: boolean;
@@ -402,7 +280,7 @@ export interface SendMessageOptions {
 }
 
 export interface SendPhotoOptions {
-  message_thread_id?: number;        // Forum topic identifier
+  message_thread_id?: number; // Forum topic identifier
   caption?: string;
   parse_mode?: "Markdown" | "MarkdownV2" | "HTML";
   caption_entities?: MessageEntity[];
@@ -415,7 +293,7 @@ export interface SendPhotoOptions {
 }
 
 export interface SendDocumentOptions {
-  message_thread_id?: number;        // Forum topic identifier
+  message_thread_id?: number; // Forum topic identifier
   thumbnail?: string;
   caption?: string;
   parse_mode?: "Markdown" | "MarkdownV2" | "HTML";
@@ -429,7 +307,7 @@ export interface SendDocumentOptions {
 }
 
 export interface CopyMessageOptions {
-  message_thread_id?: number;        // Forum topic identifier
+  message_thread_id?: number; // Forum topic identifier
   caption?: string;
   parse_mode?: "Markdown" | "MarkdownV2" | "HTML";
   caption_entities?: MessageEntity[];
@@ -438,6 +316,13 @@ export interface CopyMessageOptions {
   reply_to_message_id?: number;
   allow_sending_without_reply?: boolean;
   reply_markup?: ReplyMarkup;
+}
+
+export interface ForwardMessageOptions {
+  message_thread_id?: number;
+  protect_content?: boolean;
+  disable_notification?: boolean;
+  video_start_timestamp?: number;
 }
 
 export interface AnswerCallbackQueryOptions {
@@ -502,14 +387,4 @@ export interface ApiResponse<T> {
 }
 
 // Export types from grammyjs/types for convenience
-export {
-  Update,
-  User,
-  Chat,
-  Message,
-  CallbackQuery,
-  ChatMemberUpdated,
-  ChatPermissions,
-  WebhookInfo,
-  ChatMember,
-};
+export { Update, User, Chat, Message, CallbackQuery, ChatMemberUpdated, ChatPermissions, WebhookInfo, ChatMember };

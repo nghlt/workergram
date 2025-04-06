@@ -21,6 +21,7 @@ import {
   CreateForumTopicOptions,
   EditForumTopicOptions,
   ForumTopic,
+  ForwardMessageOptions,
 } from "./types";
 
 /**
@@ -202,7 +203,7 @@ export class MessageContextImpl
    */
   async forwardMessage(
     toChatId: number | string,
-    options: any = {},
+    options: ForwardMessageOptions = {},
   ): Promise<Message> {
     // Automatically include message_thread_id if specified in options
     const forwardOptions = { ...options };
@@ -621,7 +622,7 @@ export class EditedMessageContextImpl
    */
   async forwardMessage(
     toChatId: number | string,
-    options: any = {},
+    options: ForwardMessageOptions = {},
   ): Promise<Message> {
     // Automatically include message_thread_id if specified in options
     const forwardOptions = { ...options };
