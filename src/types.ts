@@ -15,6 +15,25 @@ import {
 } from "@grammyjs/types";
 
 /**
+ * Telegram update types
+ */
+export type UpdateType = 
+  | 'message'
+  | 'edited_message'
+  | 'channel_post'
+  | 'edited_channel_post'
+  | 'inline_query'
+  | 'chosen_inline_result'
+  | 'callback_query'
+  | 'shipping_query'
+  | 'pre_checkout_query'
+  | 'poll'
+  | 'poll_answer'
+  | 'my_chat_member'
+  | 'chat_member'
+  | 'chat_join_request';
+
+/**
  * Bot interface
  */
 export interface Bot {
@@ -99,11 +118,9 @@ export interface Bot {
   getChatMember(chatId: number | string, userId: number): Promise<any>;
 }
 
-// Update Types
-export type UpdateType = 'message'|'edited_message'|'channel_post'|'edited_channel_post'|'inline_query'|'chosen_inline_result'|'callback_query'|'shipping_query'|'pre_checkout_query'|'poll'|'poll_answer'|'my_chat_member'|'chat_member'|'chat_join_request'
-
 // Event handlers
 export type MessageHandler = (ctx: MessageContext) => Promise<void> | void;
+export type EditedMessageHandler = (ctx: EditedMessageContext) => Promise<void> | void;
 export type CallbackQueryHandler = (
   ctx: CallbackQueryContext,
 ) => Promise<void> | void;
@@ -133,6 +150,12 @@ export interface BaseContext {
 
 export interface MessageContext extends BaseContext {
   message: Message;
+  userId: number;
+  chatId: number | string;
+  topicId?: number;
+  text?: string;
+  command?: string;
+  commandPayload?: string;
   reply(
     messageText: string,
     messageOptions?: SendMessageOptions,
@@ -162,6 +185,10 @@ export interface MessageContext extends BaseContext {
 export interface CallbackQueryContext extends BaseContext {
   callbackQuery: CallbackQuery;
   message?: Message;
+  userId: number;
+  chatId?: number | string;
+  topicId?: number;
+  callbackData?: string;
   answer(text?: string, options?: AnswerCallbackQueryOptions): Promise<boolean>;
   editText(
     messageText: string,
@@ -173,6 +200,28 @@ export interface CallbackQueryContext extends BaseContext {
     messageText: string,
     messageOptions?: SendMessageOptions,
   ): Promise<Message>;
+}
+
+export interface EditedMessageContext extends BaseContext {
+  editedMessage: Message;
+  userId: number;
+  chatId: number | string;
+  topicId?: number;
+  text?: string;
+  reply(
+    messageText: string,
+    messageOptions?: SendMessageOptions,
+  ): Promise<Message>;
+  delete(): Promise<boolean>;
+  replyWithPhoto(
+    photo: string | File,
+    options?: SendPhotoOptions,
+  ): Promise<Message>;
+  replyWithDocument(
+    document: string | File,
+    options?: SendDocumentOptions,
+  ): Promise<Message>;
+  getChat(): Promise<Chat>;
 }
 
 export interface ChatMemberUpdateContext extends BaseContext {

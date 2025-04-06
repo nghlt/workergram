@@ -9,6 +9,7 @@ import {
   ChatPermissions,
   WebhookInfo,
   MessageHandler,
+  EditedMessageHandler,
   CallbackQueryHandler,
   ChatMemberUpdateHandler,
   GenericHandler,
@@ -26,6 +27,7 @@ import {
 
 import {
   MessageContextImpl,
+  EditedMessageContextImpl,
   CallbackQueryContextImpl,
   ChatMemberUpdateContextImpl,
 } from "./context";
@@ -77,6 +79,11 @@ export class Bot {
   on(event: "message", handler: MessageHandler, filter?: FilterFunction): void;
 
   /**
+   * Register a handler for edited message updates
+   */
+  on(event: "edited_message", handler: EditedMessageHandler, filter?: FilterFunction): void;
+
+  /**
    * Register a handler for chat member updates
    */
   on(
@@ -120,6 +127,8 @@ export class Bot {
   private createContext(update: Update): any {
     if ("message" in update && update.message) {
       return new MessageContextImpl(this, update);
+    } else if ("edited_message" in update && update.edited_message) {
+      return new EditedMessageContextImpl(this, update);
     } else if ("callback_query" in update && update.callback_query) {
       return new CallbackQueryContextImpl(this, update);
     } else if ("chat_member" in update && update.chat_member) {
@@ -165,14 +174,17 @@ export class Bot {
               Object.prototype.toString.call(filter) === "[object RegExp]"
             ) {
               const text =
-                update.message?.text || update.callback_query?.data || "";
+                update.message?.text || 
+                update.edited_message?.text || 
+                update.callback_query?.data || 
+                "";
               if (!(filter as RegExp).test(text)) {
                 continue;
               }
             }
             // Handle string filters (for command matching)
             else if (typeof filter === "string") {
-              const text = update.message?.text || "";
+              const text = update.message?.text || update.edited_message?.text || "";
               if (!text.startsWith(`/${filter}`)) {
                 continue;
               }
