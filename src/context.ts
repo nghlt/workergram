@@ -5,6 +5,8 @@ import {
   Chat,
   ChatMemberUpdated,
   User,
+  ChatPermissions,
+  ChatMember,
 } from "@grammyjs/types";
 import {
   Bot,
@@ -21,7 +23,7 @@ import {
   CreateForumTopicOptions,
   EditForumTopicOptions,
   ForumTopic,
-  ForwardMessageOptions,
+  ForwardMessageOptions
 } from "./types";
 
 /**
@@ -60,7 +62,7 @@ export class MessageContextImpl
   userId: number;
   chatId: number | string;
   topicId?: number;
-  text?: string;
+  text: string;
   command?: string;
   commandPayload?: string;
   firstName?: string;
@@ -75,7 +77,7 @@ export class MessageContextImpl
     this.userId = this.message.from?.id || 0;
     this.chatId = this.message.chat.id;
     this.topicId = this.message.message_thread_id;
-    this.text = this.message.text;
+    this.text = this.message.text!;
 
     // Set user properties if the message has a sender
     if (this.message.from) {
@@ -274,6 +276,39 @@ export class MessageContextImpl
     onlyIfBanned?: boolean,
   ): Promise<boolean> {
     return this.bot.unbanChatMember(this.message.chat.id, userId, onlyIfBanned);
+  }
+
+  /**
+   * Check if a user is a member of a specific chat
+   * @param chatId Chat ID to check membership in
+   * @param userId User ID to check, defaults to the current user
+   * @returns The member's status in the specified chat
+   */
+  async isChatMemberOf(
+    chatId: number | string
+  ): Promise<ChatMember> {
+    
+    return this.bot.getChatMember(chatId, this.userId);
+  }
+
+  /**
+   * Restrict a chat member's permissions
+   * @param permissions New permissions for the user
+   * @param untilDate Date when restrictions will be lifted (0 or not specified - forever)
+   * @param chatId Chat ID to restrict a member
+   * @returns True on success
+   */
+  async restrictChatMember(
+    permissions: ChatPermissions,
+    untilDate?: number,
+    chatId?: number    
+  ): Promise<boolean> {
+    return this.bot.restrictChatMember(
+      chatId || this.message.chat.id,
+      this.userId,
+      permissions,
+      untilDate
+    );
   }
 
   // Forum topic management methods
@@ -494,6 +529,81 @@ export class CallbackQueryContextImpl
     
     return this.bot.sendMessage(this.message.chat.id, messageText, options);
   }
+
+
+
+  /**
+   * Check if a user is a member of a specific chat
+   * @param chatId Chat ID to check membership in
+   * @param userId User ID to check, defaults to the current user
+   * @returns The member's status in the specified chat
+   */
+  async isChatMemberOf(
+    chatId: number | string,
+  ): Promise<ChatMember> {
+    return this.bot.getChatMember(chatId, this.userId);
+  }
+
+
+  /**
+   * Restrict a chat member's permissions
+   * @param permissions New permissions for the user
+   * @param untilDate Date when restrictions will be lifted (0 or not specified - forever)
+   * @param chatId Chat ID to restrict a member
+   * @returns True on success
+   */
+  async restrictChatMember(
+    permissions: ChatPermissions,
+    untilDate?: number,
+    chatId?: number    
+  ): Promise<boolean> {
+    if (!this.message) {
+      throw new Error("Cannot restrict chat member: no message in callback query");
+    }
+    return this.bot.restrictChatMember(
+      chatId || this.message.chat.id,
+      this.userId,
+      permissions,
+      untilDate
+    );
+  }
+
+  /**
+   * Ban a user from the chat
+   * @param userId User ID to ban
+   * @param untilDate Date when the user will be unbanned (0 or not specified - forever)
+   * @param revokeMessages Pass True to delete all messages from the chat for the user
+   */
+  async banChatMember(
+    userId: number,
+    untilDate?: number,
+    revokeMessages?: boolean,
+  ): Promise<boolean> {
+    if (!this.message) {
+      throw new Error("Cannot ban chat member: no message in callback query");
+    }
+    return this.bot.banChatMember(
+      this.message.chat.id,
+      userId,
+      untilDate,
+      revokeMessages,
+    );
+  }
+
+  /**
+   * Unban a user from the chat
+   * @param userId User ID to unban
+   * @param onlyIfBanned Pass True to unban only if the user is banned
+   */
+  async unbanChatMember(
+    userId: number,
+    onlyIfBanned?: boolean,
+  ): Promise<boolean> {
+    if (!this.message) {
+      throw new Error("Cannot unban chat member: no message in callback query");
+    }
+    return this.bot.unbanChatMember(this.message.chat.id, userId, onlyIfBanned);
+  }
 }
 
 /**
@@ -663,6 +773,70 @@ export class EditedMessageContextImpl
       chat_id: this.editedMessage.chat.id,
     });
   }
+
+
+  /**
+   * Check if a user is a member of a specific chat
+   * @param chatId Chat ID to check membership in
+   * @param userId User ID to check, defaults to the current user
+   * @returns The member's status in the specified chat
+   */
+  async isChatMemberOf(
+    chatId: number | string
+  ): Promise<ChatMember> {
+    return this.bot.getChatMember(chatId, this.userId);
+  }
+
+  /**
+   * Restrict a chat member's permissions
+   * @param permissions New permissions for the user
+   * @param untilDate Date when restrictions will be lifted (0 or not specified - forever)
+   * @param chatId Chat ID to restrict a member
+   * @returns True on success
+   */
+  async restrictChatMember(
+    permissions: ChatPermissions,
+    untilDate?: number,
+    chatId?: number    
+  ): Promise<boolean> {
+    return this.bot.restrictChatMember(
+      chatId || this.editedMessage.chat.id,
+      this.userId,
+      permissions,
+      untilDate
+    );
+  }
+
+  /**
+   * Ban a user from the chat
+   * @param userId User ID to ban
+   * @param untilDate Date when the user will be unbanned (0 or not specified - forever)
+   * @param revokeMessages Pass True to delete all messages from the chat for the user
+   */
+  async banChatMember(
+    userId: number,
+    untilDate?: number,
+    revokeMessages?: boolean,
+  ): Promise<boolean> {
+    return this.bot.banChatMember(
+      this.editedMessage.chat.id,
+      userId,
+      untilDate,
+      revokeMessages,
+    );
+  }
+
+  /**
+   * Unban a user from the chat
+   * @param userId User ID to unban
+   * @param onlyIfBanned Pass True to unban only if the user is banned
+   */
+  async unbanChatMember(
+    userId: number,
+    onlyIfBanned?: boolean,
+  ): Promise<boolean> {
+    return this.bot.unbanChatMember(this.editedMessage.chat.id, userId, onlyIfBanned);
+  }
 }
 
 /**
@@ -823,5 +997,39 @@ export class ChatMemberUpdateContextImpl
       this.user.id,
       onlyIfBanned,
     );
+  }
+
+  /**
+   * Restrict a chat member's permissions
+   * @param permissions New permissions for the user
+   * @param untilDate Date when restrictions will be lifted (0 or not specified - forever)
+   * @param chatId Chat ID to restrict a member
+   * @returns True on success
+   */
+  async restrictChatMember(
+    permissions: ChatPermissions,
+    untilDate?: number,
+    chatId?: number    
+  ): Promise<boolean> {
+    return this.bot.restrictChatMember(
+      chatId || this.chatMemberUpdate.chat.id,
+      this.userId,
+      permissions,
+      untilDate
+    );
+  }
+
+
+
+  /**
+   * Check if a user is a member of a specific chat
+   * @param chatId Chat ID to check membership in
+   * @param userId User ID to check, defaults to the user who triggered the update
+   * @returns The member's status in the specified chat
+   */
+  async isChatMemberOf(
+    chatId: number | string
+  ): Promise<ChatMember> {
+    return this.bot.getChatMember(chatId, this.userId);
   }
 }
