@@ -12,6 +12,12 @@ import {
   ChatPermissions,
   WebhookInfo,
   ChatMember,
+  ChatMemberOwner,
+  ChatMemberAdministrator,
+  ChatMemberMember,
+  ChatMemberRestricted,
+  ChatMemberLeft, 
+  ChatMemberBanned 
 } from "@grammyjs/types";
 
 /**
@@ -568,4 +574,10 @@ export {
   ChatPermissions,
   WebhookInfo,
   ChatMember,
+  ChatMemberOwner,
+  ChatMemberAdministrator,
+  ChatMemberMember,
+  ChatMemberRestricted,
+  ChatMemberLeft, 
+  ChatMemberBanned 
 };

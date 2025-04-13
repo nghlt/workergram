@@ -1,13 +1,4 @@
-import {
-  Update,
-  Message,
-  CallbackQuery,
-  Chat,
-  ChatMemberUpdated,
-  User,
-  ChatPermissions,
-  ChatMember,
-} from "@grammyjs/types";
+import { Update, Message, CallbackQuery, Chat, ChatMemberUpdated, User, ChatMember} from "@grammyjs/types";
 import {
   Bot,
   BaseContext,
@@ -23,7 +14,8 @@ import {
   CreateForumTopicOptions,
   EditForumTopicOptions,
   ForumTopic,
-  ForwardMessageOptions
+  ForwardMessageOptions,
+  ChatPermissions,
 } from "./types";
 
 /**
@@ -43,10 +35,7 @@ export class BaseContextImpl implements BaseContext {
    * @param messageText Text of the reply
    * @param messageOptions Additional options for sending the message
    */
-  async reply(
-    messageText: string,
-    messageOptions: SendMessageOptions = {},
-  ): Promise<Message> {
+  async reply(messageText: string, messageOptions: SendMessageOptions = {}): Promise<Message> {
     throw new Error("Method not implemented in base context");
   }
 }
@@ -54,10 +43,7 @@ export class BaseContextImpl implements BaseContext {
 /**
  * Context class for message updates
  */
-export class MessageContextImpl
-  extends BaseContextImpl
-  implements MessageContext
-{
+export class MessageContextImpl extends BaseContextImpl implements MessageContext {
   message: Message;
   userId: number;
   chatId: number | string;
@@ -84,16 +70,16 @@ export class MessageContextImpl
       this.firstName = this.message.from.first_name;
       this.lastName = this.message.from.last_name;
       this.username = this.message.from.username;
-      
+
       // Create fullName from first and last name
-      this.fullName = this.firstName + (this.lastName ? ` ${this.lastName}` : '');
-      
+      this.fullName = this.firstName + (this.lastName ? ` ${this.lastName}` : "");
+
       // Create name property that combines fullName and username
-      this.name = this.fullName + (this.username ? ` (@${this.username})` : '');
+      this.name = this.fullName + (this.username ? ` (@${this.username})` : "");
     }
 
     // Parse command if present
-    if (this.text && this.text.startsWith('/')) {
+    if (this.text && this.text.startsWith("/")) {
       const commandMatch = this.text.match(/^\/([a-zA-Z0-9_]+)(?:@\w+)?(?:\s+(.*))?$/);
       if (commandMatch) {
         this.command = commandMatch[1];
@@ -107,21 +93,18 @@ export class MessageContextImpl
    * @param messageText Text of the reply
    * @param messageOptions Additional options for sending the message
    */
-  async reply(
-    messageText: string,
-    messageOptions: SendMessageOptions = {},
-  ): Promise<Message> {
+  async reply(messageText: string, messageOptions: SendMessageOptions = {}): Promise<Message> {
     // Automatically include message_thread_id if it exists and not already specified
     const options: SendMessageOptions = {
       reply_to_message_id: this.message.message_id,
       ...messageOptions,
     };
-    
+
     // Add message_thread_id for forum topics if not already specified
     if (this.topicId && !options.message_thread_id) {
       options.message_thread_id = this.topicId;
     }
-    
+
     return this.bot.sendMessage(this.message.chat.id, messageText, options);
   }
 
@@ -130,10 +113,7 @@ export class MessageContextImpl
    * @param messageText New text for the message
    * @param messageOptions Additional options for editing the message
    */
-  async editText(
-    messageText: string,
-    messageOptions: SendMessageOptions = {},
-  ): Promise<Message | boolean> {
+  async editText(messageText: string, messageOptions: SendMessageOptions = {}): Promise<Message | boolean> {
     return this.bot.callApi("editMessageText", {
       chat_id: this.message.chat.id,
       message_id: this.message.message_id,
@@ -157,21 +137,18 @@ export class MessageContextImpl
    * @param photo Photo to send (file ID or URL)
    * @param options Additional options for sending the photo
    */
-  async replyWithPhoto(
-    photo: string,
-    options: SendPhotoOptions = {},
-  ): Promise<Message> {
+  async replyWithPhoto(photo: string, options: SendPhotoOptions = {}): Promise<Message> {
     // Automatically include message_thread_id if it exists and not already specified
     const photoOptions: SendPhotoOptions = {
       reply_to_message_id: this.message.message_id,
       ...options,
     };
-    
+
     // Add message_thread_id for forum topics if not already specified
     if (this.topicId && !photoOptions.message_thread_id) {
       photoOptions.message_thread_id = this.topicId;
     }
-    
+
     return this.bot.sendPhoto(this.message.chat.id, photo, photoOptions);
   }
 
@@ -180,21 +157,18 @@ export class MessageContextImpl
    * @param document Document to send (file ID, URL, or File object)
    * @param options Additional options for sending the document
    */
-  async replyWithDocument(
-    document: string,
-    options: SendDocumentOptions = {},
-  ): Promise<Message> {
+  async replyWithDocument(document: string, options: SendDocumentOptions = {}): Promise<Message> {
     // Automatically include message_thread_id if it exists and not already specified
     const docOptions: SendDocumentOptions = {
       reply_to_message_id: this.message.message_id,
       ...options,
     };
-    
+
     // Add message_thread_id for forum topics if not already specified
     if (this.topicId && !docOptions.message_thread_id) {
       docOptions.message_thread_id = this.topicId;
     }
-    
+
     return this.bot.sendDocument(this.message.chat.id, document, docOptions);
   }
 
@@ -203,19 +177,11 @@ export class MessageContextImpl
    * @param toChatId Target chat ID to forward the message to
    * @param options Additional options for forwarding the message
    */
-  async forwardMessage(
-    toChatId: number | string,
-    options: ForwardMessageOptions = {},
-  ): Promise<Message> {
+  async forwardMessage(toChatId: number | string, options: ForwardMessageOptions = {}): Promise<Message> {
     // Automatically include message_thread_id if specified in options
     const forwardOptions = { ...options };
-    
-    return this.bot.forwardMessage(
-      toChatId,
-      this.message.chat.id,
-      this.message.message_id,
-      forwardOptions
-    );
+
+    return this.bot.forwardMessage(toChatId, this.message.chat.id, this.message.message_id, forwardOptions);
   }
 
   /**
@@ -223,19 +189,11 @@ export class MessageContextImpl
    * @param toChatId Target chat ID to copy the message to
    * @param options Additional options for copying the message
    */
-  async copyMessage(
-    toChatId: number | string,
-    options: CopyMessageOptions = {},
-  ): Promise<{ message_id: number }> {
+  async copyMessage(toChatId: number | string, options: CopyMessageOptions = {}): Promise<{ message_id: number }> {
     // Automatically include message_thread_id if it exists and not already specified
     const copyOptions: CopyMessageOptions = { ...options };
-    
-    return this.bot.copyMessage(
-      toChatId,
-      this.message.chat.id,
-      this.message.message_id,
-      copyOptions
-    );
+
+    return this.bot.copyMessage(toChatId, this.message.chat.id, this.message.message_id, copyOptions);
   }
 
   /**
@@ -253,17 +211,8 @@ export class MessageContextImpl
    * @param untilDate Date when the user will be unbanned (0 or not specified - forever)
    * @param revokeMessages Pass True to delete all messages from the chat for the user
    */
-  async banChatMember(
-    userId: number,
-    untilDate?: number,
-    revokeMessages?: boolean,
-  ): Promise<boolean> {
-    return this.bot.banChatMember(
-      this.message.chat.id,
-      userId,
-      untilDate,
-      revokeMessages,
-    );
+  async banChatMember(userId: number, untilDate?: number, revokeMessages?: boolean): Promise<boolean> {
+    return this.bot.banChatMember(this.message.chat.id, userId, untilDate, revokeMessages);
   }
 
   /**
@@ -271,10 +220,7 @@ export class MessageContextImpl
    * @param userId User ID to unban
    * @param onlyIfBanned Pass True to unban only if the user is banned
    */
-  async unbanChatMember(
-    userId: number,
-    onlyIfBanned?: boolean,
-  ): Promise<boolean> {
+  async unbanChatMember(userId: number, onlyIfBanned?: boolean): Promise<boolean> {
     return this.bot.unbanChatMember(this.message.chat.id, userId, onlyIfBanned);
   }
 
@@ -284,10 +230,7 @@ export class MessageContextImpl
    * @param userId User ID to check, defaults to the current user
    * @returns The member's status in the specified chat
    */
-  async isChatMemberOf(
-    chatId: number | string
-  ): Promise<ChatMember> {
-    
+  async isChatMemberOf(chatId: number | string): Promise<ChatMember> {
     return this.bot.getChatMember(chatId, this.userId);
   }
 
@@ -298,31 +241,19 @@ export class MessageContextImpl
    * @param chatId Chat ID to restrict a member
    * @returns True on success
    */
-  async restrictChatMember(
-    permissions: ChatPermissions,
-    untilDate?: number,
-    chatId?: number    
-  ): Promise<boolean> {
-    return this.bot.restrictChatMember(
-      chatId || this.message.chat.id,
-      this.userId,
-      permissions,
-      untilDate
-    );
+  async restrictChatMember(permissions: ChatPermissions, untilDate?: number, chatId?: number): Promise<boolean> {
+    return this.bot.restrictChatMember(chatId || this.message.chat.id, this.userId, permissions, untilDate);
   }
 
   // Forum topic management methods
-  
+
   /**
    * Create a new forum topic in the current chat
    * @param name Name for the forum topic
    * @param options Additional options for forum topic creation
    * @returns Information about the created forum topic
    */
-  async createForumTopic(
-    name: string,
-    options: CreateForumTopicOptions = {},
-  ): Promise<ForumTopic> {
+  async createForumTopic(name: string, options: CreateForumTopicOptions = {}): Promise<ForumTopic> {
     return this.bot.createForumTopic(this.message.chat.id, name, options);
   }
 
@@ -332,10 +263,7 @@ export class MessageContextImpl
    * @param options Options to update (name and/or icon_custom_emoji_id)
    * @returns True on success
    */
-  async editForumTopic(
-    messageThreadId: number,
-    options: EditForumTopicOptions,
-  ): Promise<boolean> {
+  async editForumTopic(messageThreadId: number, options: EditForumTopicOptions): Promise<boolean> {
     return this.bot.editForumTopic(this.message.chat.id, messageThreadId, options);
   }
 
@@ -395,10 +323,7 @@ export class MessageContextImpl
 /**
  * Context class for callback query updates
  */
-export class CallbackQueryContextImpl
-  extends BaseContextImpl
-  implements CallbackQueryContext
-{
+export class CallbackQueryContextImpl extends BaseContextImpl implements CallbackQueryContext {
   callbackQuery: CallbackQuery;
   message?: Message;
   userId: number;
@@ -419,17 +344,17 @@ export class CallbackQueryContextImpl
     this.chatId = this.message?.chat.id;
     this.topicId = this.message?.message_thread_id;
     this.callbackData = this.callbackQuery.data;
-    
+
     // Set user properties from the user who sent the callback query
     this.firstName = this.callbackQuery.from.first_name;
     this.lastName = this.callbackQuery.from.last_name;
     this.username = this.callbackQuery.from.username;
-    
+
     // Create fullName from first and last name
-    this.fullName = this.firstName + (this.lastName ? ` ${this.lastName}` : '');
-    
+    this.fullName = this.firstName + (this.lastName ? ` ${this.lastName}` : "");
+
     // Create name property that combines fullName and username
-    this.name = this.fullName + (this.username ? ` (@${this.username})` : '');
+    this.name = this.fullName + (this.username ? ` (@${this.username})` : "");
   }
 
   /**
@@ -437,10 +362,7 @@ export class CallbackQueryContextImpl
    * @param text Text to show to the user
    * @param options Additional options for answering the callback query
    */
-  async answer(
-    text?: string,
-    options: AnswerCallbackQueryOptions = {},
-  ): Promise<boolean> {
+  async answer(text?: string, options: AnswerCallbackQueryOptions = {}): Promise<boolean> {
     return this.bot.answerCallbackQuery(this.callbackQuery.id, {
       text,
       ...options,
@@ -452,10 +374,7 @@ export class CallbackQueryContextImpl
    * @param messageText New text for the message
    * @param messageOptions Additional options for editing the message
    */
-  async editText(
-    messageText: string,
-    messageOptions: SendMessageOptions = {},
-  ): Promise<Message | boolean> {
+  async editText(messageText: string, messageOptions: SendMessageOptions = {}): Promise<Message | boolean> {
     if (!this.message) {
       throw new Error("Cannot edit message: no message in callback query");
     }
@@ -473,10 +392,7 @@ export class CallbackQueryContextImpl
    * @param replyMarkup New reply markup for the message
    * @param options Additional options for editing the message
    */
-  async editReplyMarkup(
-    replyMarkup: any,
-    options: any = {},
-  ): Promise<Message | boolean> {
+  async editReplyMarkup(replyMarkup: any, options: any = {}): Promise<Message | boolean> {
     if (!this.message) {
       throw new Error("Cannot edit message: no message in callback query");
     }
@@ -508,10 +424,7 @@ export class CallbackQueryContextImpl
    * @param messageText Text of the reply
    * @param messageOptions Additional options for sending the message
    */
-  async reply(
-    messageText: string,
-    messageOptions: SendMessageOptions = {},
-  ): Promise<Message> {
+  async reply(messageText: string, messageOptions: SendMessageOptions = {}): Promise<Message> {
     if (!this.message) {
       throw new Error("Cannot reply to message: no message in callback query");
     }
@@ -521,16 +434,14 @@ export class CallbackQueryContextImpl
       reply_to_message_id: this.message.message_id,
       ...messageOptions,
     };
-    
+
     // Add message_thread_id for forum topics if not already specified
     if (this.topicId && !options.message_thread_id) {
       options.message_thread_id = this.topicId;
     }
-    
+
     return this.bot.sendMessage(this.message.chat.id, messageText, options);
   }
-
-
 
   /**
    * Check if a user is a member of a specific chat
@@ -538,12 +449,9 @@ export class CallbackQueryContextImpl
    * @param userId User ID to check, defaults to the current user
    * @returns The member's status in the specified chat
    */
-  async isChatMemberOf(
-    chatId: number | string,
-  ): Promise<ChatMember> {
+  async isChatMemberOf(chatId: number | string): Promise<ChatMember> {
     return this.bot.getChatMember(chatId, this.userId);
   }
-
 
   /**
    * Restrict a chat member's permissions
@@ -552,20 +460,11 @@ export class CallbackQueryContextImpl
    * @param chatId Chat ID to restrict a member
    * @returns True on success
    */
-  async restrictChatMember(
-    permissions: ChatPermissions,
-    untilDate?: number,
-    chatId?: number    
-  ): Promise<boolean> {
+  async restrictChatMember(permissions: ChatPermissions, untilDate?: number, chatId?: number): Promise<boolean> {
     if (!this.message) {
       throw new Error("Cannot restrict chat member: no message in callback query");
     }
-    return this.bot.restrictChatMember(
-      chatId || this.message.chat.id,
-      this.userId,
-      permissions,
-      untilDate
-    );
+    return this.bot.restrictChatMember(chatId || this.message.chat.id, this.userId, permissions, untilDate);
   }
 
   /**
@@ -574,20 +473,11 @@ export class CallbackQueryContextImpl
    * @param untilDate Date when the user will be unbanned (0 or not specified - forever)
    * @param revokeMessages Pass True to delete all messages from the chat for the user
    */
-  async banChatMember(
-    userId: number,
-    untilDate?: number,
-    revokeMessages?: boolean,
-  ): Promise<boolean> {
+  async banChatMember(userId: number, untilDate?: number, revokeMessages?: boolean): Promise<boolean> {
     if (!this.message) {
       throw new Error("Cannot ban chat member: no message in callback query");
     }
-    return this.bot.banChatMember(
-      this.message.chat.id,
-      userId,
-      untilDate,
-      revokeMessages,
-    );
+    return this.bot.banChatMember(this.message.chat.id, userId, untilDate, revokeMessages);
   }
 
   /**
@@ -595,10 +485,7 @@ export class CallbackQueryContextImpl
    * @param userId User ID to unban
    * @param onlyIfBanned Pass True to unban only if the user is banned
    */
-  async unbanChatMember(
-    userId: number,
-    onlyIfBanned?: boolean,
-  ): Promise<boolean> {
+  async unbanChatMember(userId: number, onlyIfBanned?: boolean): Promise<boolean> {
     if (!this.message) {
       throw new Error("Cannot unban chat member: no message in callback query");
     }
@@ -609,10 +496,7 @@ export class CallbackQueryContextImpl
 /**
  * Context class for edited message updates
  */
-export class EditedMessageContextImpl
-  extends BaseContextImpl
-  implements EditedMessageContext
-{
+export class EditedMessageContextImpl extends BaseContextImpl implements EditedMessageContext {
   editedMessage: Message;
   userId: number;
   chatId: number | string;
@@ -631,18 +515,18 @@ export class EditedMessageContextImpl
     this.chatId = this.editedMessage.chat.id;
     this.topicId = this.editedMessage.message_thread_id;
     this.text = this.editedMessage.text;
-    
+
     // Set user properties if the message has a sender
     if (this.editedMessage.from) {
       this.firstName = this.editedMessage.from.first_name;
       this.lastName = this.editedMessage.from.last_name;
       this.username = this.editedMessage.from.username;
-      
+
       // Create fullName from first and last name
-      this.fullName = this.firstName + (this.lastName ? ` ${this.lastName}` : '');
-      
+      this.fullName = this.firstName + (this.lastName ? ` ${this.lastName}` : "");
+
       // Create name property that combines fullName and username
-      this.name = this.fullName + (this.username ? ` (@${this.username})` : '');
+      this.name = this.fullName + (this.username ? ` (@${this.username})` : "");
     }
   }
 
@@ -651,21 +535,18 @@ export class EditedMessageContextImpl
    * @param messageText Text of the reply
    * @param messageOptions Additional options for sending the message
    */
-  async reply(
-    messageText: string,
-    messageOptions: SendMessageOptions = {},
-  ): Promise<Message> {
+  async reply(messageText: string, messageOptions: SendMessageOptions = {}): Promise<Message> {
     // Automatically include message_thread_id if it exists and not already specified
     const options: SendMessageOptions = {
       reply_to_message_id: this.editedMessage.message_id,
       ...messageOptions,
     };
-    
+
     // Add message_thread_id for forum topics if not already specified
     if (this.topicId && !options.message_thread_id) {
       options.message_thread_id = this.topicId;
     }
-    
+
     return this.bot.sendMessage(this.editedMessage.chat.id, messageText, options);
   }
 
@@ -684,21 +565,18 @@ export class EditedMessageContextImpl
    * @param photo Photo to send (file ID, URL, or File object)
    * @param options Additional options for sending the photo
    */
-  async replyWithPhoto(
-    photo: string,
-    options: SendPhotoOptions = {},
-  ): Promise<Message> {
+  async replyWithPhoto(photo: string, options: SendPhotoOptions = {}): Promise<Message> {
     // Automatically include message_thread_id if it exists and not already specified
     const photoOptions: SendPhotoOptions = {
       reply_to_message_id: this.editedMessage.message_id,
       ...options,
     };
-    
+
     // Add message_thread_id for forum topics if not already specified
     if (this.topicId && !photoOptions.message_thread_id) {
       photoOptions.message_thread_id = this.topicId;
     }
-    
+
     return this.bot.sendPhoto(this.editedMessage.chat.id, photo, photoOptions);
   }
 
@@ -707,21 +585,18 @@ export class EditedMessageContextImpl
    * @param document Document to send (file ID, URL, or File object)
    * @param options Additional options for sending the document
    */
-  async replyWithDocument(
-    document: string,
-    options: SendDocumentOptions = {},
-  ): Promise<Message> {
+  async replyWithDocument(document: string, options: SendDocumentOptions = {}): Promise<Message> {
     // Automatically include message_thread_id if it exists and not already specified
     const docOptions: SendDocumentOptions = {
       reply_to_message_id: this.editedMessage.message_id,
       ...options,
     };
-    
+
     // Add message_thread_id for forum topics if not already specified
     if (this.topicId && !docOptions.message_thread_id) {
       docOptions.message_thread_id = this.topicId;
     }
-    
+
     return this.bot.sendDocument(this.editedMessage.chat.id, document, docOptions);
   }
 
@@ -730,19 +605,11 @@ export class EditedMessageContextImpl
    * @param toChatId Target chat ID to forward the message to
    * @param options Additional options for forwarding the message
    */
-  async forwardMessage(
-    toChatId: number | string,
-    options: ForwardMessageOptions = {},
-  ): Promise<Message> {
+  async forwardMessage(toChatId: number | string, options: ForwardMessageOptions = {}): Promise<Message> {
     // Automatically include message_thread_id if specified in options
     const forwardOptions = { ...options };
-    
-    return this.bot.forwardMessage(
-      toChatId,
-      this.editedMessage.chat.id,
-      this.editedMessage.message_id,
-      forwardOptions
-    );
+
+    return this.bot.forwardMessage(toChatId, this.editedMessage.chat.id, this.editedMessage.message_id, forwardOptions);
   }
 
   /**
@@ -750,19 +617,11 @@ export class EditedMessageContextImpl
    * @param toChatId Target chat ID to copy the message to
    * @param options Additional options for copying the message
    */
-  async copyMessage(
-    toChatId: number | string,
-    options: CopyMessageOptions = {},
-  ): Promise<{ message_id: number }> {
+  async copyMessage(toChatId: number | string, options: CopyMessageOptions = {}): Promise<{ message_id: number }> {
     // Automatically include message_thread_id if it exists and not already specified
     const copyOptions: CopyMessageOptions = { ...options };
-    
-    return this.bot.copyMessage(
-      toChatId,
-      this.editedMessage.chat.id,
-      this.editedMessage.message_id,
-      copyOptions
-    );
+
+    return this.bot.copyMessage(toChatId, this.editedMessage.chat.id, this.editedMessage.message_id, copyOptions);
   }
 
   /**
@@ -774,16 +633,13 @@ export class EditedMessageContextImpl
     });
   }
 
-
   /**
    * Check if a user is a member of a specific chat
    * @param chatId Chat ID to check membership in
    * @param userId User ID to check, defaults to the current user
    * @returns The member's status in the specified chat
    */
-  async isChatMemberOf(
-    chatId: number | string
-  ): Promise<ChatMember> {
+  async isChatMemberOf(chatId: number | string): Promise<ChatMember> {
     return this.bot.getChatMember(chatId, this.userId);
   }
 
@@ -794,17 +650,8 @@ export class EditedMessageContextImpl
    * @param chatId Chat ID to restrict a member
    * @returns True on success
    */
-  async restrictChatMember(
-    permissions: ChatPermissions,
-    untilDate?: number,
-    chatId?: number    
-  ): Promise<boolean> {
-    return this.bot.restrictChatMember(
-      chatId || this.editedMessage.chat.id,
-      this.userId,
-      permissions,
-      untilDate
-    );
+  async restrictChatMember(permissions: ChatPermissions, untilDate?: number, chatId?: number): Promise<boolean> {
+    return this.bot.restrictChatMember(chatId || this.editedMessage.chat.id, this.userId, permissions, untilDate);
   }
 
   /**
@@ -813,17 +660,8 @@ export class EditedMessageContextImpl
    * @param untilDate Date when the user will be unbanned (0 or not specified - forever)
    * @param revokeMessages Pass True to delete all messages from the chat for the user
    */
-  async banChatMember(
-    userId: number,
-    untilDate?: number,
-    revokeMessages?: boolean,
-  ): Promise<boolean> {
-    return this.bot.banChatMember(
-      this.editedMessage.chat.id,
-      userId,
-      untilDate,
-      revokeMessages,
-    );
+  async banChatMember(userId: number, untilDate?: number, revokeMessages?: boolean): Promise<boolean> {
+    return this.bot.banChatMember(this.editedMessage.chat.id, userId, untilDate, revokeMessages);
   }
 
   /**
@@ -831,10 +669,7 @@ export class EditedMessageContextImpl
    * @param userId User ID to unban
    * @param onlyIfBanned Pass True to unban only if the user is banned
    */
-  async unbanChatMember(
-    userId: number,
-    onlyIfBanned?: boolean,
-  ): Promise<boolean> {
+  async unbanChatMember(userId: number, onlyIfBanned?: boolean): Promise<boolean> {
     return this.bot.unbanChatMember(this.editedMessage.chat.id, userId, onlyIfBanned);
   }
 }
@@ -842,10 +677,7 @@ export class EditedMessageContextImpl
 /**
  * Context class for chat member updates
  */
-export class ChatMemberUpdateContextImpl
-  extends BaseContextImpl
-  implements ChatMemberUpdateContext
-{
+export class ChatMemberUpdateContextImpl extends BaseContextImpl implements ChatMemberUpdateContext {
   chatMemberUpdate: ChatMemberUpdated;
   updateType: "chat_member" | "my_chat_member";
   userId: number;
@@ -856,88 +688,82 @@ export class ChatMemberUpdateContextImpl
   username?: string;
   name?: string;
 
-  constructor(
-    bot: Bot,
-    update: Update,
-    updateType: "chat_member" | "my_chat_member",
-  ) {
+  constructor(bot: Bot, update: Update, updateType: "chat_member" | "my_chat_member") {
     super(bot, update);
     this.updateType = updateType;
     this.chatMemberUpdate = update[updateType]!;
-    
+
     // Set user and chat IDs
     this.userId = this.chatMemberUpdate.new_chat_member.user.id;
     this.chatId = this.chatMemberUpdate.chat.id;
-    
+
     // Set user properties from the user being updated
     const user = this.chatMemberUpdate.new_chat_member.user;
     this.firstName = user.first_name;
     this.lastName = user.last_name;
     this.username = user.username;
-    
+
     // Create fullName from first and last name
-    this.fullName = this.firstName + (this.lastName ? ` ${this.lastName}` : '');
-    
+    this.fullName = this.firstName + (this.lastName ? ` ${this.lastName}` : "");
+
     // Create name property that combines fullName and username
-    this.name = this.fullName + (this.username ? ` (@${this.username})` : '');
+    this.name = this.fullName + (this.username ? ` (@${this.username})` : "");
   }
 
   /**
    * Get the old status of the chat member
    */
-  get oldStatus(): string {
+  get oldStatus(): "restricted" | "left" | "kicked" | "creator" | "administrator" | "member" {
     return this.chatMemberUpdate.old_chat_member.status;
   }
 
   /**
    * Get the new status of the chat member
    */
-  get newStatus(): string {
+  get newStatus(): "restricted" | "left" | "kicked" | "creator" | "administrator" | "member" {
     return this.chatMemberUpdate.new_chat_member.status;
+  }
+
+  /**
+   * Get old member info
+   */
+  get oldMemberInfo(): ChatMember {
+    return this.chatMemberUpdate.old_chat_member
+  }
+
+  /**
+   * Get new member info
+   */
+  get newMemberInfo(): ChatMember {
+    return this.chatMemberUpdate.new_chat_member
   }
 
   /**
    * Check if this is a new member joining the chat
    */
   isJoining(): boolean {
-    return (
-      (this.oldStatus === "left" || this.oldStatus === "kicked") &&
-      (this.newStatus === "member" ||
-        this.newStatus === "administrator" ||
-        this.newStatus === "restricted")
-    );
+    return (this.oldStatus === "left" || this.oldStatus === "kicked") && (this.newStatus === "member" || this.newStatus === "administrator" || this.newStatus === "restricted");
   }
 
   /**
    * Check if this is a member leaving the chat
    */
   isLeaving(): boolean {
-    return (
-      (this.oldStatus === "member" ||
-        this.oldStatus === "administrator" ||
-        this.oldStatus === "restricted") &&
-      (this.newStatus === "left" || this.newStatus === "kicked")
-    );
+    return (this.oldStatus === "member" || this.oldStatus === "administrator" || this.oldStatus === "restricted") && (this.newStatus === "left" || this.newStatus === "kicked");
   }
 
   /**
    * Check if this is a member being promoted
    */
   isPromoted(): boolean {
-    return (
-      (this.oldStatus === "member" || this.oldStatus === "restricted") &&
-      this.newStatus === "administrator"
-    );
+    return (this.oldStatus === "member" || this.oldStatus === "restricted") && this.newStatus === "administrator";
   }
 
   /**
    * Check if this is a member being demoted
    */
   isDemoted(): boolean {
-    return (
-      this.oldStatus === "administrator" &&
-      (this.newStatus === "member" || this.newStatus === "restricted")
-    );
+    return this.oldStatus === "administrator" && (this.newStatus === "member" || this.newStatus === "restricted");
   }
 
   /**
@@ -959,15 +785,8 @@ export class ChatMemberUpdateContextImpl
    * @param messageText Text of the message
    * @param messageOptions Additional options for sending the message
    */
-  async reply(
-    messageText: string,
-    messageOptions: SendMessageOptions = {},
-  ): Promise<Message> {
-    return this.bot.sendMessage(
-      this.chatMemberUpdate.chat.id,
-      messageText,
-      messageOptions,
-    );
+  async reply(messageText: string, messageOptions: SendMessageOptions = {}): Promise<Message> {
+    return this.bot.sendMessage(this.chatMemberUpdate.chat.id, messageText, messageOptions);
   }
 
   /**
@@ -975,16 +794,8 @@ export class ChatMemberUpdateContextImpl
    * @param untilDate Date when the user will be unbanned (0 or not specified - forever)
    * @param revokeMessages Pass True to delete all messages from the chat for the user
    */
-  async banUser(
-    untilDate?: number,
-    revokeMessages?: boolean,
-  ): Promise<boolean> {
-    return this.bot.banChatMember(
-      this.chatMemberUpdate.chat.id,
-      this.user.id,
-      untilDate,
-      revokeMessages,
-    );
+  async banUser(untilDate?: number, revokeMessages?: boolean): Promise<boolean> {
+    return this.bot.banChatMember(this.chatMemberUpdate.chat.id, this.user.id, untilDate, revokeMessages);
   }
 
   /**
@@ -992,11 +803,7 @@ export class ChatMemberUpdateContextImpl
    * @param onlyIfBanned Pass True to unban only if the user is banned
    */
   async unbanUser(onlyIfBanned?: boolean): Promise<boolean> {
-    return this.bot.unbanChatMember(
-      this.chatMemberUpdate.chat.id,
-      this.user.id,
-      onlyIfBanned,
-    );
+    return this.bot.unbanChatMember(this.chatMemberUpdate.chat.id, this.user.id, onlyIfBanned);
   }
 
   /**
@@ -1006,20 +813,9 @@ export class ChatMemberUpdateContextImpl
    * @param chatId Chat ID to restrict a member
    * @returns True on success
    */
-  async restrictChatMember(
-    permissions: ChatPermissions,
-    untilDate?: number,
-    chatId?: number    
-  ): Promise<boolean> {
-    return this.bot.restrictChatMember(
-      chatId || this.chatMemberUpdate.chat.id,
-      this.userId,
-      permissions,
-      untilDate
-    );
+  async restrictChatMember(permissions: ChatPermissions, untilDate?: number, chatId?: number): Promise<boolean> {
+    return this.bot.restrictChatMember(chatId || this.chatMemberUpdate.chat.id, this.userId, permissions, untilDate);
   }
-
-
 
   /**
    * Check if a user is a member of a specific chat
@@ -1027,9 +823,7 @@ export class ChatMemberUpdateContextImpl
    * @param userId User ID to check, defaults to the user who triggered the update
    * @returns The member's status in the specified chat
    */
-  async isChatMemberOf(
-    chatId: number | string
-  ): Promise<ChatMember> {
+  async isChatMemberOf(chatId: number | string): Promise<ChatMember> {
     return this.bot.getChatMember(chatId, this.userId);
   }
 }

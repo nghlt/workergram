@@ -44,7 +44,13 @@ export type {
   ChatMemberUpdated,
   ChatPermissions,
   WebhookInfo,
-  ChatMember
+  ChatMember,
+  ChatMemberOwner,
+  ChatMemberAdministrator,
+  ChatMemberMember,
+  ChatMemberRestricted,
+  ChatMemberLeft, 
+  ChatMemberBanned 
 } from './types';
 
 export {filters} from './filters'
