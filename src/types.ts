@@ -358,6 +358,8 @@ export interface ChatMemberUpdateContext extends BaseContext {
   lastName?: string;
   fullName?: string;
   username?: string;
+  oldInfo: ChatMember;
+  newInfo: ChatMember;
   name?: string;
   reply(
     messageText: string,
