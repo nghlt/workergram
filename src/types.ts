@@ -170,20 +170,16 @@ export interface Bot {
 
 // Event handlers
 export type MessageHandler = (ctx: MessageContext) => Promise<void> | void;
-export type EditedMessageHandler = (
+export type EditedMessageHandler  = (
   ctx: EditedMessageContext,
 ) => Promise<void> | void;
 export type CallbackQueryHandler = (
   ctx: CallbackQueryContext,
 ) => Promise<void> | void;
-export type ChatMemberUpdateHandler = (
+export type ChatMemberUpdateHandler  = (
   ctx: ChatMemberUpdateContext,
 ) => Promise<void> | void;
-export type GenericHandler<T> = (ctx: {
-  bot: Bot;
-  update: Update;
-  [key: string]: any;
-}) => Promise<void> | void;
+export type GenericHandler<T> = (ctx: T) => Promise<void> | void;
 
 // Event filter types
 export type FilterFunction = (update: Update) => boolean;

@@ -1,4 +1,4 @@
-import { Update, Message, CallbackQuery, Chat, ChatMemberUpdated, User, ChatMember} from "@grammyjs/types";
+import { Update, Message, CallbackQuery, Chat, ChatMemberUpdated, User, ChatMember } from "@grammyjs/types";
 import {
   Bot,
   BaseContext,
@@ -688,7 +688,7 @@ export class ChatMemberUpdateContextImpl extends BaseContextImpl implements Chat
   username?: string;
   name?: string;
   oldInfo: ChatMember;
-  newInfo: ChatMember
+  newInfo: ChatMember;
 
   constructor(bot: Bot, update: Update, updateType: "chat_member" | "my_chat_member") {
     super(bot, update);
@@ -704,8 +704,8 @@ export class ChatMemberUpdateContextImpl extends BaseContextImpl implements Chat
     this.firstName = user.first_name;
     this.lastName = user.last_name;
     this.username = user.username;
-    this.oldInfo = this.chatMemberUpdate.old_chat_member
-    this.newInfo = this.chatMemberUpdate.new_chat_member
+    this.oldInfo = this.chatMemberUpdate.old_chat_member;
+    this.newInfo = this.chatMemberUpdate.new_chat_member;
 
     // Create fullName from first and last name
     this.fullName = this.firstName + (this.lastName ? ` ${this.lastName}` : "");
@@ -727,8 +727,6 @@ export class ChatMemberUpdateContextImpl extends BaseContextImpl implements Chat
   get newStatus(): "restricted" | "left" | "kicked" | "creator" | "administrator" | "member" {
     return this.chatMemberUpdate.new_chat_member.status;
   }
-
- 
 
   /**
    * Check if this is a new member joining the chat
