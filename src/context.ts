@@ -687,6 +687,8 @@ export class ChatMemberUpdateContextImpl extends BaseContextImpl implements Chat
   fullName?: string;
   username?: string;
   name?: string;
+  oldInfo: ChatMember;
+  newInfo: ChatMember
 
   constructor(bot: Bot, update: Update, updateType: "chat_member" | "my_chat_member") {
     super(bot, update);
@@ -702,6 +704,8 @@ export class ChatMemberUpdateContextImpl extends BaseContextImpl implements Chat
     this.firstName = user.first_name;
     this.lastName = user.last_name;
     this.username = user.username;
+    this.oldInfo = this.chatMemberUpdate.old_chat_member
+    this.newInfo = this.chatMemberUpdate.new_chat_member
 
     // Create fullName from first and last name
     this.fullName = this.firstName + (this.lastName ? ` ${this.lastName}` : "");
@@ -724,19 +728,7 @@ export class ChatMemberUpdateContextImpl extends BaseContextImpl implements Chat
     return this.chatMemberUpdate.new_chat_member.status;
   }
 
-  /**
-   * Get old member info
-   */
-  get oldMemberInfo(): ChatMember {
-    return this.chatMemberUpdate.old_chat_member
-  }
-
-  /**
-   * Get new member info
-   */
-  get newMemberInfo(): ChatMember {
-    return this.chatMemberUpdate.new_chat_member
-  }
+ 
 
   /**
    * Check if this is a new member joining the chat
