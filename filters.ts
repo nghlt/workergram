@@ -1,4 +1,4 @@
-import { ChatMemberRestricted, Update } from "@grammyjs/types";
+import { Update } from "@grammyjs/types";
 import { FilterFunction } from "./types/eventHandlers";
 import { UpdateType } from "./types/bot";
 
@@ -28,7 +28,8 @@ export const filters = {
    * Filter for text messages matching a regex
    * @param regex The regex to match
    */
-  textMatches: (regex: RegExp): FilterFunction => withEvents((update) => "message" in update && typeof update.message?.text === "string" && regex.test(update.message.text), ["message"]),
+  textMatches: (regex: RegExp): FilterFunction =>
+    withEvents((update) => "message" in update && typeof update.message?.text === "string" && regex.test(update.message.text), ["message"]),
 
   /**
    * Filter for commands
@@ -82,10 +83,6 @@ export const filters = {
       (update) => {
         const oldStatus = update.chat_member?.old_chat_member.status,
           newStatus = update.chat_member?.new_chat_member.status;
-        if (oldStatus === "restricted") {
-          const oldMember = update.chat_member?.old_chat_member as ChatMemberRestricted;
-          return !oldMember.is_member;
-        }
         return (oldStatus === "left" || oldStatus === "kicked") && (newStatus === "member" || newStatus === "administrator" || newStatus === "restricted");
       },
       ["chat_member"]
@@ -168,7 +165,7 @@ export const filters = {
         else return false;
         return chat.id === chatId;
       },
-      ["message", "callback_query", "chat_member"]
+      ["message", "callback_query", "chat_member" ]
     ),
 
   /**
@@ -186,6 +183,6 @@ export const filters = {
         else return false;
         return user?.id === userId;
       },
-      ["message", "chat_member"]
+      ["message",   "chat_member", ]
     ),
 };
