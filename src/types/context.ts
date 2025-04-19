@@ -51,6 +51,10 @@ export interface InlineQueryInfo {
   chatType?: string;
 }
 
+import { MessageContextImpl } from "../context/messageContext";
+import { CallbackQueryContextImpl } from "../context/callbackQueryContext";
+import { ChatMemberUpdateContextImpl } from "../context/chatMemberUpdateContext";
+import { EditedMessageContextImpl } from "../context/editedMessageContext";
 
 // Context classes forward declarations
 
