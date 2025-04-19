@@ -9,7 +9,6 @@ import { BaseContextImpl } from "./base";
 /**
  * Context class for message updates
  */
-
 export class MessageContextImpl extends BaseContextImpl implements MessageContext {
     message: Message;
     userId: number;
@@ -30,7 +29,7 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
         this.userId = this.message.from?.id || 0;
         this.chatId = this.message.chat.id;
         this.topicId = this.message.message_thread_id;
-        this.text = this.message.text!;
+        this.text = this.message.text || "";
 
         // Set user properties if the message has a sender
         if (this.message.from) {
@@ -61,7 +60,6 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @param messageOptions Additional options for sending the message
      */
     async reply(messageText: string, messageOptions: SendMessageOptions = {}): Promise<Message> {
-        // Automatically include message_thread_id if it exists and not already specified
         const options: SendMessageOptions = {
             reply_to_message_id: this.message.message_id,
             ...messageOptions,
@@ -72,17 +70,17 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
             options.message_thread_id = this.topicId;
         }
 
-        return this.bot.sendMessage(this.message.chat.id, messageText, options);
+        return this.bot.sendMessage(this.chatId, messageText, options);
     }
 
     /**
-     * Edit the current message
+     * Edit the current message text
      * @param messageText New text for the message
      * @param messageOptions Additional options for editing the message
      */
     async editText(messageText: string, messageOptions: SendMessageOptions = {}): Promise<Message | boolean> {
         return this.bot.callApi("editMessageText", {
-            chat_id: this.message.chat.id,
+            chat_id: this.chatId,
             message_id: this.message.message_id,
             text: messageText,
             ...messageOptions,
@@ -94,18 +92,17 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      */
     async delete(): Promise<boolean> {
         return this.bot.callApi("deleteMessage", {
-            chat_id: this.message.chat.id,
+            chat_id: this.chatId,
             message_id: this.message.message_id,
         });
     }
 
     /**
-     * Send a photo in reply to the current message
+     * Reply to the current message with a photo
      * @param photo Photo to send (file ID or URL)
      * @param options Additional options for sending the photo
      */
     async replyWithPhoto(photo: string, options: SendPhotoOptions = {}): Promise<Message> {
-        // Automatically include message_thread_id if it exists and not already specified
         const photoOptions: SendPhotoOptions = {
             reply_to_message_id: this.message.message_id,
             ...options,
@@ -116,16 +113,15 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
             photoOptions.message_thread_id = this.topicId;
         }
 
-        return this.bot.sendPhoto(this.message.chat.id, photo, photoOptions);
+        return this.bot.sendPhoto(this.chatId, photo, photoOptions);
     }
 
     /**
-     * Send a document in reply to the current message
+     * Reply to the current message with a document
      * @param document Document to send (file ID, URL, or File object)
      * @param options Additional options for sending the document
      */
     async replyWithDocument(document: string, options: SendDocumentOptions = {}): Promise<Message> {
-        // Automatically include message_thread_id if it exists and not already specified
         const docOptions: SendDocumentOptions = {
             reply_to_message_id: this.message.message_id,
             ...options,
@@ -136,31 +132,27 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
             docOptions.message_thread_id = this.topicId;
         }
 
-        return this.bot.sendDocument(this.message.chat.id, document, docOptions);
+        return this.bot.sendDocument(this.chatId, document, docOptions);
     }
 
     /**
      * Forward the current message to another chat
-     * @param toChatId Target chat ID to forward the message to
+     * @param toChatIdentifier Target chat ID to forward the message to
      * @param options Additional options for forwarding the message
      */
     async forwardMessage(toChatId: number | string, options: ForwardMessageOptions = {}): Promise<Message> {
-        // Automatically include message_thread_id if specified in options
         const forwardOptions = { ...options };
-
-        return this.bot.forwardMessage(toChatId, this.message.chat.id, this.message.message_id, forwardOptions);
+        return this.bot.forwardMessage(toChatId, this.chatId, this.message.message_id, forwardOptions);
     }
 
     /**
      * Copy the current message to another chat
-     * @param toChatId Target chat ID to copy the message to
+     * @param toChatIdentifier Target chat ID to copy the message to
      * @param options Additional options for copying the message
      */
     async copyMessage(toChatId: number | string, options: CopyMessageOptions = {}): Promise<{ message_id: number; }> {
-        // Automatically include message_thread_id if it exists and not already specified
         const copyOptions: CopyMessageOptions = { ...options };
-
-        return this.bot.copyMessage(toChatId, this.message.chat.id, this.message.message_id, copyOptions);
+        return this.bot.copyMessage(toChatId, this.chatId, this.message.message_id, copyOptions);
     }
 
     /**
@@ -168,7 +160,7 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      */
     async getChat(): Promise<Chat> {
         return this.bot.callApi("getChat", {
-            chat_id: this.message.chat.id,
+            chat_id: this.chatId,
         });
     }
 
@@ -179,7 +171,7 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @param revokeMessages Pass True to delete all messages from the chat for the user
      */
     async banChatMember(userId: number, untilDate?: number, revokeMessages?: boolean): Promise<boolean> {
-        return this.bot.banChatMember(this.message.chat.id, userId, untilDate, revokeMessages);
+        return this.bot.banChatMember(this.chatId, userId, untilDate, revokeMessages);
     }
 
     /**
@@ -188,28 +180,28 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @param onlyIfBanned Pass True to unban only if the user is banned
      */
     async unbanChatMember(userId: number, onlyIfBanned?: boolean): Promise<boolean> {
-        return this.bot.unbanChatMember(this.message.chat.id, userId, onlyIfBanned);
+        return this.bot.unbanChatMember(this.chatId, userId, onlyIfBanned);
     }
 
     /**
-     * Check if a user is a member of a specific chat
-     * @param chatId Chat ID to check membership in
-     * @param userId User ID to check, defaults to the current user
+     * Get membership status of the user in a specified chat
+     * @param chatIdentifier Chat ID to check membership in
      * @returns The member's status in the specified chat
      */
-    async isChatMemberOf(chatId: number | string): Promise<ChatMember> {
-        return this.bot.getChatMember(chatId, this.userId);
+    async isChatMemberOf(chatId: number | string, userId?: number): Promise<ChatMember> {
+        return this.bot.getChatMember(chatId, userId ?? this.userId);
     }
 
     /**
      * Restrict a chat member's permissions
      * @param permissions New permissions for the user
      * @param untilDate Date when restrictions will be lifted (0 or not specified - forever)
+     * @param chatIdentifier Chat ID to restrict a member
      * @param chatId Chat ID to restrict a member
      * @returns True on success
      */
     async restrictChatMember(permissions: ChatPermissions, untilDate?: number, chatId?: number): Promise<boolean> {
-        return this.bot.restrictChatMember(chatId || this.message.chat.id, this.userId, permissions, untilDate);
+        return this.bot.restrictChatMember(chatId || this.chatId, this.userId, permissions, untilDate);
     }
 
     // Forum topic management methods

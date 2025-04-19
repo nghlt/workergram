@@ -2,6 +2,10 @@ import { Update, Message, Chat, ChatMember, ChatPermissions, CallbackQuery, Chat
 import { BotInterface, ForumTopic } from ".";
 import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, CopyMessageOptions, CreateForumTopicOptions, EditForumTopicOptions, AnswerCallbackQueryOptions } from "./options";
 
+import { MessageContextImpl } from "../context/messageContext";
+import { CallbackQueryContextImpl } from "../context/callbackQueryContext";
+import { ChatMemberUpdateContextImpl } from "../context/chatMemberUpdateContext";
+import { EditedMessageContextImpl } from "../context/editedMessageContext";
 
 // Context classes forward declarations
 

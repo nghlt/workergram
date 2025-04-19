@@ -4,8 +4,8 @@ import { Sticker } from "./types";
 import { ApiResponse } from "./types";
 import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, CopyMessageOptions, AnswerCallbackQueryOptions, SetWebhookOptions, CreateForumTopicOptions, EditForumTopicOptions, MessageHandler, ChatMemberUpdateHandler, GenericHandler, FilterFunction, UpdateType, ApiEndpoints, CallbackQueryHandler } from "./types";
 
-import { ChatMemberUpdateContextImpl } from "./context/chatMemberUpdate";
-import { MessageContextImpl } from "./context/message";
+import { ChatMemberUpdateContextImpl } from "./context/chatMemberUpdateContext";
+import { MessageContextImpl } from "./context/messageContext";
 
 
 
@@ -13,29 +13,32 @@ import { MessageContextImpl } from "./context/message";
  * Main Bot class for interacting with the Telegram Bot API
  */
 export class Bot {
-  private token: string;
-  private baseUrl: string;
-  private handlers: Map<
-    string,
-    Array<{
-      handler: any;
-      filter?: FilterFunction;
-    }>
-  >;
+  /**
+   * Telegram Bot API token
+   */
+  private apiToken: string;
+  /**
+   * Base URL for Telegram API
+   */
+  private apiBaseUrl: string;
+  /**
+   * Registered event handlers
+   */
+  private eventHandlers: Map<string, Array<{ handler: any; filter?: FilterFunction }>>;
 
   /**
    * Creates a new Bot instance
-   * @param token Telegram Bot API token
+   * @param apiToken Telegram Bot API token
    * @param update Optional update object from Telegram to process immediately (pre-parsed)
    */
-  constructor(token: string, update?: Update) {
-    this.token = token;
-    this.baseUrl = `https://api.telegram.org/bot${token}`;
-    this.handlers = new Map();
+  constructor(apiToken: string, update?: Update) {
+    this.apiToken = apiToken;
+    this.apiBaseUrl = `https://api.telegram.org/bot${apiToken}`;
+    this.eventHandlers = new Map();
 
     // Process the update if provided
     if (update) {
-      this.processUpdate(update).catch((error) => {
+      this.onUpdate(update).catch((error: unknown) => {
         console.error("Error processing update in constructor:", error);
       });
     }
@@ -62,18 +65,21 @@ export class Bot {
   on<T>(event: UpdateType, handler: GenericHandler<T>, filter?: FilterFunction): void;
 
   /**
-   * Implementation of the on method
+   * Register an event handler for a specific update type
+   * @param event Update type (e.g., 'message', 'callback_query', 'chat_member')
+   * @param handler Handler function to process the event
+   * @param filter Optional filter to restrict which updates trigger the handler
    */
   on(event: UpdateType, handler: (ctx: any) => Promise<any> | any, filter?: FilterFunction): void {
     if (filter?.compatibleEvents && !filter.compatibleEvents.includes(event)) {
       throw new Error(`Filter is not compatible with event "${event}". Allowed: ${filter.compatibleEvents.join(", ")}`);
     }
 
-    if (!this.handlers.has(event)) {
-      this.handlers.set(event, []);
+    if (!this.eventHandlers.has(event)) {
+      this.eventHandlers.set(event, []);
     }
 
-    this.handlers.get(event)?.push({
+    this.eventHandlers.get(event)?.push({
       handler: handler as GenericHandler<any>,
       filter,
     });
@@ -99,7 +105,7 @@ export class Bot {
    * Process an update from Telegram
    * @param update The update object from Telegram
    */
-  async processUpdate(update: Update): Promise<void> {
+  async onUpdate(update: Update): Promise<void> {
     // Determine the type of update
     const updateTypes = Object.keys(update).filter((key) => key !== "update_id" && (update as any)[key]);
 
@@ -108,7 +114,7 @@ export class Bot {
 
     for (const updateType of updateTypes) {
       // Get the handlers for this update type
-      const handlers = this.handlers.get(updateType) || [];
+      const handlers = this.eventHandlers.get(updateType) || [];
 
       // Execute each matching handler
       for (const { handler, filter } of handlers) {
@@ -170,7 +176,7 @@ export class Bot {
   }
 
   /**
-   * Make a call to the Telegram Bot API (public version)
+   * Call the Telegram Bot API
    * @param method The API method to call
    * @param params Parameters for the API call
    * @returns The API response
@@ -180,13 +186,13 @@ export class Bot {
   }
 
   /**
-   * Make a call to the Telegram Bot API (internal implementation)
+   * Internal implementation of the Telegram Bot API call
    * @param method The API method to call
    * @param params Parameters for the API call
    * @returns The API response
    */
   private async _callApi<T>(method: ApiEndpoints, params: Record<string, any> = {}): Promise<T> {
-    const url = `${this.baseUrl}/${method}`;
+    const url = `${this.apiBaseUrl}/${method}`;
 
     // We'll always use JSON for requests, as we've simplified file handling to use strings
     // instead of File objects. FormData is still available through createFormData
@@ -213,7 +219,7 @@ export class Bot {
 
   /**
    * Send a message to a chat
-   * @param chatId Chat ID to send message to
+   * @param chatId Chat ID to send the message to
    * @param text Text of the message
    * @param options Additional options for sending the message
    * @returns The sent message
@@ -263,7 +269,7 @@ export class Bot {
 
   /**
    * Send a photo to a chat
-   * @param chatId Chat ID to send photo to
+   * @param chatId Chat ID to send the photo to
    * @param photo Photo to send (file ID or URL)
    * @param options Additional options for sending the photo
    * @returns The sent message
@@ -278,7 +284,7 @@ export class Bot {
 
   /**
    * Send a document to a chat
-   * @param chatId Chat ID to send document to
+   * @param chatId Chat ID to send the document to
    * @param document Document to send (file ID or URL)
    * @param options Additional options for sending the document
    * @returns The sent message

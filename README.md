@@ -30,20 +30,20 @@ export default {
     const bot = new Bot(env.TELEGRAM_BOT_TOKEN);
     
     // Register command handlers
-    bot.on('message', async (ctx) => {
+    bot.addHandler('message', async (ctx) => {
       await ctx.reply('Hello! I am a Telegram bot powered by WorkerGram.');
     }, filters.command('start'));
     
-    bot.on('message', async (ctx) => {
+    bot.addHandler('message', async (ctx) => {
       await ctx.reply('This is a help message. You can use the following commands:\n' +
         '/start - Start the bot\n' +
         '/help - Show this help message');
     }, filters.command('help'));
     
     // Handle regular text messages
-    bot.on('message', async (ctx) => {
-      if (ctx.message.text) {
-        await ctx.reply(`You said: ${ctx.message.text}`);
+    bot.addHandler('message', async (ctx) => {
+      if (ctx.messageText) {
+        await ctx.reply(`You said: ${ctx.messageText}`);
       }
     }, filters.custom(update => 
       'message' in update && 
@@ -54,7 +54,7 @@ export default {
     // Handle new members joining
     bot.on('chat_member', async (ctx) => {
       if (ctx.isJoining()) {
-        await ctx.reply(`Welcome to the group, ${ctx.user.first_name}!`);
+        await ctx.reply(`Welcome to the group, ${ctx.firstName}!`);
       }
     }, filters.memberStatusChange('join'));
     
@@ -65,7 +65,7 @@ export default {
         const update = await request.json();
         
         // Process the update
-        await bot.processUpdate(update);
+        await bot.onUpdate(update);
         
         // Return a 200 OK response to Telegram
         return new Response('OK', { status: 200 });
