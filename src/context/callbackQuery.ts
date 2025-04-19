@@ -1,6 +1,6 @@
 import { CallbackQuery, Message, Update, ChatMember, ChatPermissions } from "@grammyjs/types";
 import { AnswerCallbackQueryOptions, SendMessageOptions } from "../types/options";
-import { CallbackQueryContext } from "../types/context";
+import { CallbackQueryContext, UserInfo, ChatInfo, MessageInfo, CallbackInfo } from "../types/context";
 import { BotInterface } from "../types/bot";
 import { BaseContextImpl } from "./base";
 
@@ -10,37 +10,71 @@ import { BaseContextImpl } from "./base";
  */
 
 export class CallbackQueryContextImpl extends BaseContextImpl implements CallbackQueryContext {
-    callbackQuery: CallbackQuery;
-    message?: Message;
+    // Frequently accessed properties at top level
     userId: number;
     chatId?: number | string;
-    topicId?: number;
+    messageId?: number;
     callbackData?: string;
-    firstName?: string;
-    lastName?: string;
-    fullName?: string;
-    username?: string;
-    name?: string;
+    
+    // Organized property groups
+    user: UserInfo;
+    chat?: ChatInfo;
+    message?: MessageInfo;
+    callback: CallbackInfo;
 
     constructor(bot: BotInterface, update: Update) {
         super(bot, update);
-        this.callbackQuery = update.callback_query!;
-        this.message = this.callbackQuery.message;
-        this.userId = this.callbackQuery.from.id;
-        this.chatId = this.message?.chat.id;
-        this.topicId = this.message?.message_thread_id;
-        this.callbackData = this.callbackQuery.data;
-
-        // Set user properties from the user who sent the callback query
-        this.firstName = this.callbackQuery.from.first_name;
-        this.lastName = this.callbackQuery.from.last_name;
-        this.username = this.callbackQuery.from.username;
-
-        // Create fullName from first and last name
-        this.fullName = this.firstName + (this.lastName ? ` ${this.lastName}` : "");
-
-        // Create name property that combines fullName and username
-        this.name = this.fullName + (this.username ? ` (@${this.username})` : "");
+        const callbackQuery = update.callback_query!;
+        const originalMessage = callbackQuery.message;
+        
+        // Set top-level properties
+        this.userId = callbackQuery.from.id;
+        this.chatId = originalMessage?.chat.id;
+        this.messageId = originalMessage?.message_id;
+        this.callbackData = callbackQuery.data;
+        
+        // Create user object
+        const firstName = callbackQuery.from.first_name;
+        const lastName = callbackQuery.from.last_name;
+        const username = callbackQuery.from.username;
+        const fullName = firstName + (lastName ? ` ${lastName}` : "");
+        const displayName = fullName + (username ? ` (@${username})` : "");
+        
+        this.user = {
+            id: this.userId,
+            firstName,
+            lastName,
+            fullName,
+            username,
+            displayName
+        };
+        
+        // Create chat object if message exists
+        if (originalMessage) {
+            this.chat = {
+                id: originalMessage.chat.id,
+                topicId: originalMessage.message_thread_id,
+                type: originalMessage.chat.type,
+                title: originalMessage.chat.title
+            };
+            
+            // Create message object
+            this.message = {
+                id: originalMessage.message_id,
+                text: originalMessage.text,
+                date: originalMessage.date,
+                isEdited: false
+            };
+        }
+        
+        // Create callback object
+        this.callback = {
+            id: callbackQuery.id,
+            data: callbackQuery.data,
+            gameShortName: callbackQuery.game_short_name,
+            inlineMessageId: callbackQuery.inline_message_id,
+            chatInstance: callbackQuery.chat_instance
+        };
     }
 
     /**
@@ -49,7 +83,7 @@ export class CallbackQueryContextImpl extends BaseContextImpl implements Callbac
      * @param options Additional options for answering the callback query
      */
     async answer(text?: string, options: AnswerCallbackQueryOptions = {}): Promise<boolean> {
-        return this.bot.answerCallbackQuery(this.callbackQuery.id, {
+        return this.bot.answerCallbackQuery(this.callback.id, {
             text,
             ...options,
         });
@@ -61,13 +95,13 @@ export class CallbackQueryContextImpl extends BaseContextImpl implements Callbac
      * @param messageOptions Additional options for editing the message
      */
     async editText(messageText: string, messageOptions: SendMessageOptions = {}): Promise<Message | boolean> {
-        if (!this.message) {
+        if (!this.chatId || !this.messageId) {
             throw new Error("Cannot edit message: no message in callback query");
         }
 
         return this.bot.callApi("editMessageText", {
-            chat_id: this.message.chat.id,
-            message_id: this.message.message_id,
+            chat_id: this.chatId,
+            message_id: this.messageId,
             text: messageText,
             ...messageOptions,
         });
@@ -79,13 +113,13 @@ export class CallbackQueryContextImpl extends BaseContextImpl implements Callbac
      * @param options Additional options for editing the message
      */
     async editReplyMarkup(replyMarkup: any, options: any = {}): Promise<Message | boolean> {
-        if (!this.message) {
+        if (!this.chatId || !this.messageId) {
             throw new Error("Cannot edit message: no message in callback query");
         }
 
         return this.bot.callApi("editMessageReplyMarkup", {
-            chat_id: this.message.chat.id,
-            message_id: this.message.message_id,
+            chat_id: this.chatId,
+            message_id: this.messageId,
             reply_markup: replyMarkup,
             ...options,
         });
@@ -95,13 +129,13 @@ export class CallbackQueryContextImpl extends BaseContextImpl implements Callbac
      * Delete the associated message
      */
     async deleteMessage(): Promise<boolean> {
-        if (!this.message) {
+        if (!this.chatId || !this.messageId) {
             throw new Error("Cannot delete message: no message in callback query");
         }
 
         return this.bot.callApi("deleteMessage", {
-            chat_id: this.message.chat.id,
-            message_id: this.message.message_id,
+            chat_id: this.chatId,
+            message_id: this.messageId,
         });
     }
 
@@ -110,23 +144,25 @@ export class CallbackQueryContextImpl extends BaseContextImpl implements Callbac
      * @param messageText Text of the reply
      * @param messageOptions Additional options for sending the message
      */
-    async reply(messageText: string, messageOptions: SendMessageOptions = {}): Promise<Message> {
-        if (!this.message) {
-            throw new Error("Cannot reply to message: no message in callback query");
+    async reply(messageText: string, messageOptions: SendMessageOptions = {}, asReply: boolean = false): Promise<Message> {
+        if (!this.chatId) {
+            throw new Error("Cannot reply to message: no chat in callback query");
         }
 
-        // Automatically include message_thread_id if it exists and not already specified
-        const options: SendMessageOptions = {
-            reply_to_message_id: this.message.message_id,
-            ...messageOptions,
-        };
+        // Create options object
+        const options: SendMessageOptions = { ...messageOptions };
+        
+        // Automatically include reply_to_message_id if asReply is true and we have a messageId
+        if (asReply && this.messageId) {
+            options.reply_to_message_id = this.messageId;
+        }
 
         // Add message_thread_id for forum topics if not already specified
-        if (this.topicId && !options.message_thread_id) {
-            options.message_thread_id = this.topicId;
+        if (this.chat?.topicId && !options.message_thread_id) {
+            options.message_thread_id = this.chat.topicId;
         }
 
-        return this.bot.sendMessage(this.message.chat.id, messageText, options);
+        return this.bot.sendMessage(this.chatId, messageText, options);
     }
 
     /**
@@ -147,10 +183,11 @@ export class CallbackQueryContextImpl extends BaseContextImpl implements Callbac
      * @returns True on success
      */
     async restrictChatMember(permissions: ChatPermissions, untilDate?: number, chatId?: number): Promise<boolean> {
-        if (!this.message) {
-            throw new Error("Cannot restrict chat member: no message in callback query");
+        const targetChatId = chatId || this.chatId;
+        if (!targetChatId) {
+            throw new Error("Cannot restrict chat member: no chat in callback query");
         }
-        return this.bot.restrictChatMember(chatId || this.message.chat.id, this.userId, permissions, untilDate);
+        return this.bot.restrictChatMember(targetChatId, this.userId, permissions, untilDate);
     }
 
     /**
@@ -160,10 +197,10 @@ export class CallbackQueryContextImpl extends BaseContextImpl implements Callbac
      * @param revokeMessages Pass True to delete all messages from the chat for the user
      */
     async banChatMember(userId: number, untilDate?: number, revokeMessages?: boolean): Promise<boolean> {
-        if (!this.message) {
-            throw new Error("Cannot ban chat member: no message in callback query");
+        if (!this.chatId) {
+            throw new Error("Cannot ban chat member: no chat in callback query");
         }
-        return this.bot.banChatMember(this.message.chat.id, userId, untilDate, revokeMessages);
+        return this.bot.banChatMember(this.chatId, userId, untilDate, revokeMessages);
     }
 
     /**
@@ -172,9 +209,9 @@ export class CallbackQueryContextImpl extends BaseContextImpl implements Callbac
      * @param onlyIfBanned Pass True to unban only if the user is banned
      */
     async unbanChatMember(userId: number, onlyIfBanned?: boolean): Promise<boolean> {
-        if (!this.message) {
-            throw new Error("Cannot unban chat member: no message in callback query");
+        if (!this.chatId) {
+            throw new Error("Cannot unban chat member: no chat in callback query");
         }
-        return this.bot.unbanChatMember(this.message.chat.id, userId, onlyIfBanned);
+        return this.bot.unbanChatMember(this.chatId, userId, onlyIfBanned);
     }
 }

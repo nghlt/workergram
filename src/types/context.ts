@@ -1,34 +1,85 @@
-import { Update, Message, Chat, ChatMember, ChatPermissions, CallbackQuery, ChatMemberUpdated, User } from "@grammyjs/types";
-import { BotInterface, ForumTopic } from ".";
-import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, CopyMessageOptions, CreateForumTopicOptions, EditForumTopicOptions, AnswerCallbackQueryOptions } from "./options";
+import { Update, Message, Chat, ChatMember, ChatPermissions, CallbackQuery, ChatMemberUpdated, User, InlineQuery, InlineQueryResultArticle, InlineQueryResultPhoto, InlineQueryResultDocument, InlineQueryResultVideo, InlineQueryResultLocation } from "@grammyjs/types";
+import { BotInterface, ForumTopic, InlineQueryResult } from ".";
+import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, CopyMessageOptions, CreateForumTopicOptions, EditForumTopicOptions, AnswerCallbackQueryOptions, AnswerInlineQueryOptions } from "./options";
+
+// Common interfaces for context objects
+export interface UserInfo {
+  id: number;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  username?: string;
+  displayName?: string;
+}
+
+export interface ChatInfo {
+  id: number | string;
+  topicId?: number;
+  type?: string;
+  title?: string;
+}
+
+export interface MessageInfo {
+  id: number;
+  text?: string;
+  command?: string;
+  commandPayload?: string;
+  date: number;
+  isEdited?: boolean;
+}
+
+export interface CallbackInfo {
+  id: string;
+  data?: string;
+  gameShortName?: string;
+  inlineMessageId?: string;
+  chatInstance: string;
+}
+
+export interface MemberUpdateInfo {
+  oldStatus: string;
+  newStatus: string;
+  oldInfo: ChatMember;
+  newInfo: ChatMember;
+  updateType: string;
+}
+
+export interface InlineQueryInfo {
+  id: string;
+  query: string;
+  offset?: string;
+  chatType?: string;
+}
 
 
 // Context classes forward declarations
 
 export interface BaseContext {
+  // Common properties for all contexts
   bot: BotInterface;
   update: Update;
-  reply(messageText: string, messageOptions?: SendMessageOptions): Promise<Message>;
+  
+  // Common user information
+  userId: number;
+  user: UserInfo;
 }
 
 export interface MessageContext extends BaseContext {
-  message: Message;
-  userId: number;
+  // Frequently accessed properties at top level
   chatId: number | string;
-  topicId?: number;
+  messageId: number;
   text: string;
-  command?: string;
-  commandPayload?: string;
-  firstName?: string;
-  lastName?: string;
-  fullName?: string;
-  username?: string;
-  name?: string;
-  reply(messageText: string, messageOptions?: SendMessageOptions): Promise<Message>;
+  
+  // Organized property groups
+  chat: ChatInfo;
+  message: MessageInfo;
+  
+  // Message-specific methods
+  reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<Message>;
   editText(messageText: string, messageOptions?: SendMessageOptions): Promise<Message | boolean>;
-  delete(): Promise<boolean>;
-  replyWithPhoto(photo: string, options?: SendPhotoOptions): Promise<Message>;
-  replyWithDocument(document: string, options?: SendDocumentOptions): Promise<Message>;
+  deleteMessage(): Promise<boolean>;
+  replyWithPhoto(photo: string, options?: SendPhotoOptions, asReply?: boolean): Promise<Message>;
+  replyWithDocument(document: string, options?: SendDocumentOptions, asReply?: boolean): Promise<Message>;
   forwardMessage(toChatId: number | string, options?: any): Promise<Message>;
   copyMessage(toChatId: number | string, options?: CopyMessageOptions): Promise<{ message_id: number; }>;
   getChat(): Promise<Chat>;
@@ -49,22 +100,23 @@ export interface MessageContext extends BaseContext {
 }
 
 export interface CallbackQueryContext extends BaseContext {
-  callbackQuery: CallbackQuery;
-  message?: Message;
-  userId: number;
+  // Frequently accessed properties at top level
   chatId?: number | string;
-  topicId?: number;
+  messageId?: number;
   callbackData?: string;
-  firstName?: string;
-  lastName?: string;
-  fullName?: string;
-  username?: string;
-  name?: string;
+  
+  // Organized property groups
+  chat?: ChatInfo;
+  message?: MessageInfo;
+  callback: CallbackInfo;
+
+  // Callback query specific methods
   answer(text?: string, options?: AnswerCallbackQueryOptions): Promise<boolean>;
+  reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<Message>;
   editText(messageText: string, messageOptions?: SendMessageOptions): Promise<Message | boolean>;
   editReplyMarkup(replyMarkup: any, options?: any): Promise<Message | boolean>;
   deleteMessage(): Promise<boolean>;
-  reply(messageText: string, messageOptions?: SendMessageOptions): Promise<Message>;
+  reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<Message>;
   isChatMemberOf(chatId: number | string, userId?: number): Promise<ChatMember>;
   restrictChatMember(permissions: ChatPermissions, untilDate?: number, chatId?: number): Promise<boolean>;
   banChatMember(userId: number, untilDate?: number, revokeMessages?: boolean): Promise<boolean>;
@@ -72,20 +124,20 @@ export interface CallbackQueryContext extends BaseContext {
 }
 
 export interface EditedMessageContext extends BaseContext {
-  editedMessage: Message;
-  userId: number;
+  // Frequently accessed properties at top level
   chatId: number | string;
-  topicId?: number;
+  messageId: number;
   text?: string;
-  firstName?: string;
-  lastName?: string;
-  fullName?: string;
-  username?: string;
-  name?: string;
-  reply(messageText: string, messageOptions?: SendMessageOptions): Promise<Message>;
-  delete(): Promise<boolean>;
-  replyWithPhoto(photo: string, options?: SendPhotoOptions): Promise<Message>;
-  replyWithDocument(document: string, options?: SendDocumentOptions): Promise<Message>;
+  
+  // Organized property groups
+  chat: ChatInfo;
+  message: MessageInfo;
+  
+  // Message specific methods
+  reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<Message>;
+  deleteMessage(): Promise<boolean>;
+  replyWithPhoto(photo: string, options?: SendPhotoOptions, asReply?: boolean): Promise<Message>;
+  replyWithDocument(document: string, options?: SendDocumentOptions, asReply?: boolean): Promise<Message>;
   forwardMessage(toChatId: number | string, options?: any): Promise<Message>;
   copyMessage(toChatId: number | string, options?: CopyMessageOptions): Promise<{ message_id: number; }>;
   getChat(): Promise<Chat>;
@@ -96,28 +148,46 @@ export interface EditedMessageContext extends BaseContext {
 }
 
 export interface ChatMemberUpdateContext extends BaseContext {
-  chatMemberUpdate: ChatMemberUpdated;
-  updateType: "chat_member";
-  oldStatus: string;
-  newStatus: string;
+  // Frequently accessed properties at top level
+  chatId: number | string;
+  
+  // Organized property groups
+  chat: ChatInfo;
+  memberUpdate: MemberUpdateInfo;
+  
+  // Status check methods
   isJoining(): boolean;
   isLeaving(): boolean;
   isPromoted(): boolean;
   isDemoted(): boolean;
-  user: User;
-  chat: Chat;
-  userId: number;
-  chatId: number | string;
-  firstName?: string;
-  lastName?: string;
-  fullName?: string;
-  username?: string;
-  oldInfo: ChatMember;
-  newInfo: ChatMember;
-  name?: string;
-  reply(messageText: string, messageOptions?: SendMessageOptions): Promise<Message>;
-  banUser(untilDate?: number, revokeMessages?: boolean): Promise<boolean>;
-  unbanUser(onlyIfBanned?: boolean): Promise<boolean>;
+  reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<Message>;
+  banChatMember(userId?: number, untilDate?: number, revokeMessages?: boolean): Promise<boolean>;
+  unbanChatMember(userId?: number, onlyIfBanned?: boolean): Promise<boolean>;
   isChatMemberOf(chatId: number | string): Promise<ChatMember>;
   restrictChatMember(permissions: ChatPermissions, untilDate?: number, chatId?: number): Promise<boolean>;
+}
+
+export interface InlineQueryContext extends BaseContext {
+  // Frequently accessed properties at top level
+  query: string;
+  
+  // Organized property groups
+  inlineQuery: InlineQueryInfo;
+  
+  // Answer methods
+  answer(results: ReadonlyArray<InlineQueryResult>, options?: AnswerInlineQueryOptions): Promise<boolean>;
+  answerWithResults(results: ReadonlyArray<InlineQueryResult>, options?: AnswerInlineQueryOptions): Promise<boolean>;
+  
+  // Chat member utilities
+  isChatMemberOf(chatId: number | string): Promise<ChatMember>;
+  
+  // Helper methods for creating inline query results
+  createArticleResult(id: string, title: string, description: string, text: string, options?: Partial<InlineQueryResultArticle>): InlineQueryResultArticle;
+  createPhotoResult(id: string, photoUrl: string, thumbnailUrl: string, title?: string, options?: Partial<InlineQueryResultPhoto>): InlineQueryResultPhoto;
+  createDocumentResult(id: string, title: string, documentUrl: string, thumbnailUrl: string, options?: Partial<InlineQueryResultDocument>): InlineQueryResultDocument;
+  createVideoResult(id: string, title: string, videoUrl: string, thumbnailUrl: string, options?: Partial<InlineQueryResultVideo>): InlineQueryResultVideo;
+  createLocationResult(id: string, title: string, latitude: number, longitude: number, options?: Partial<InlineQueryResultLocation>): InlineQueryResultLocation;
+  
+  // Utility methods
+  generateResultId(): string;
 }

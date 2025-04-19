@@ -86,3 +86,11 @@ export interface EditForumTopicOptions {
   name?: string;
   icon_custom_emoji_id?: string;
 }
+
+export interface AnswerInlineQueryOptions {
+  cache_time?: number;
+  is_personal?: boolean;
+  next_offset?: string;
+  switch_pm_text?: string;
+  switch_pm_parameter?: string;
+}

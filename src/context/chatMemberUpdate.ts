@@ -1,5 +1,5 @@
 import { ChatMemberUpdated, ChatMember, Update, User, Chat, Message, ChatPermissions } from "@grammyjs/types";
-import { SendMessageOptions, ChatMemberUpdateContext, BotInterface } from "../types";
+import { SendMessageOptions, ChatMemberUpdateContext, BotInterface, UserInfo, ChatInfo, MemberUpdateInfo } from "../types";
 import { BaseContextImpl } from "./base";
 
 
@@ -8,122 +8,153 @@ import { BaseContextImpl } from "./base";
  */
 
 export class ChatMemberUpdateContextImpl extends BaseContextImpl implements ChatMemberUpdateContext {
-    chatMemberUpdate: ChatMemberUpdated;
-    updateType: "chat_member";
+    // Frequently accessed properties at top level
     userId: number;
     chatId: number | string;
-    firstName?: string;
-    lastName?: string;
-    fullName?: string;
-    username?: string;
-    name?: string;
-    oldInfo: ChatMember;
-    newInfo: ChatMember;
+    
+    // Organized property groups
+    user: UserInfo;
+    chat: ChatInfo;
+    memberUpdate: MemberUpdateInfo;
 
     constructor(bot: BotInterface, update: Update, updateType: "chat_member") {
         super(bot, update);
-        this.updateType = updateType;
-        this.chatMemberUpdate = update[updateType]!;
-
-        // Set user and chat IDs
-        this.userId = this.chatMemberUpdate.new_chat_member.user.id;
-        this.chatId = this.chatMemberUpdate.chat.id;
-
-        // Set user properties from the user being updated
-        const user = this.chatMemberUpdate.new_chat_member.user;
-        this.firstName = user.first_name;
-        this.lastName = user.last_name;
-        this.username = user.username;
-        this.oldInfo = this.chatMemberUpdate.old_chat_member;
-        this.newInfo = this.chatMemberUpdate.new_chat_member;
-
-        // Create fullName from first and last name
-        this.fullName = this.firstName + (this.lastName ? ` ${this.lastName}` : "");
-
-        // Create name property that combines fullName and username
-        this.name = this.fullName + (this.username ? ` (@${this.username})` : "");
+        const chatMemberUpdate = update[updateType]!;
+        const oldInfo = chatMemberUpdate.old_chat_member;
+        const newInfo = chatMemberUpdate.new_chat_member;
+        
+        // Set top-level properties
+        this.userId = newInfo.user.id;
+        this.chatId = chatMemberUpdate.chat.id;
+        
+        // Create user object
+        const user = newInfo.user;
+        const firstName = user.first_name;
+        const lastName = user.last_name;
+        const username = user.username;
+        const fullName = firstName + (lastName ? ` ${lastName}` : "");
+        const displayName = fullName + (username ? ` (@${username})` : "");
+        
+        this.user = {
+            id: this.userId,
+            firstName,
+            lastName,
+            fullName,
+            username,
+            displayName
+        };
+        
+        // Create chat object
+        this.chat = {
+            id: chatMemberUpdate.chat.id,
+            type: chatMemberUpdate.chat.type,
+            title: chatMemberUpdate.chat.title
+        };
+        
+        // Create member update object
+        this.memberUpdate = {
+            oldStatus: oldInfo.status,
+            newStatus: newInfo.status,
+            oldInfo: oldInfo,
+            newInfo: newInfo,
+            updateType: updateType
+        };
     }
 
     /**
-     * Get the old status of the chat member
+     * Check if the user is joining the chat
      */
-    get oldStatus(): "restricted" | "left" | "kicked" | "creator" | "administrator" | "member" | 'banned' {
-        return this.chatMemberUpdate.old_chat_member.status;
-    }
 
     /**
-     * Get the new status of the chat member
-     */
-    get newStatus(): "restricted" | "left" | "kicked" | "creator" | "administrator" | "member" {
-        return this.chatMemberUpdate.new_chat_member.status;
-    }
-
-    /**
-     * Check if this is a new member joining the chat
+     * Check if the user is joining the chat
      */
     isJoining(): boolean {
-        return (this.oldStatus === "left" || this.oldStatus === "kicked") && (this.newStatus === "member" || this.newStatus === "administrator" || this.newStatus === "restricted");
+        const oldStatus = this.memberUpdate.oldStatus;
+        const newStatus = this.memberUpdate.newStatus;
+        return (
+            oldStatus !== "member" &&
+            oldStatus !== "administrator" &&
+            oldStatus !== "creator" &&
+            (newStatus === "member" || newStatus === "administrator" || newStatus === "creator")
+        );
     }
 
     /**
-     * Check if this is a member leaving the chat
+     * Check if the user is leaving the chat
      */
     isLeaving(): boolean {
-        return (this.oldStatus === "member" || this.oldStatus === "administrator" || this.oldStatus === "restricted") && (this.newStatus === "left");
+        const oldStatus = this.memberUpdate.oldStatus;
+        const newStatus = this.memberUpdate.newStatus;
+        return (
+            (oldStatus === "member" || oldStatus === "administrator" || oldStatus === "creator") &&
+            newStatus !== "member" &&
+            newStatus !== "administrator" &&
+            newStatus !== "creator"
+        );
     }
 
     /**
-     * Check if this is a member being promoted
+     * Check if the user is being promoted (becoming admin/creator)
      */
     isPromoted(): boolean {
-        return (this.oldStatus === "member" || this.oldStatus === "restricted") && this.newStatus === "administrator";
+        const oldStatus = this.memberUpdate.oldStatus;
+        const newStatus = this.memberUpdate.newStatus;
+        return (
+            (oldStatus === "member" && (newStatus === "administrator" || newStatus === "creator")) ||
+            (oldStatus === "administrator" && newStatus === "creator")
+        );
     }
 
     /**
-     * Check if this is a member being demoted
+     * Check if the user is being demoted (losing admin/creator status)
      */
     isDemoted(): boolean {
-        return this.oldStatus === "administrator" && (this.newStatus === "member" || this.newStatus === "restricted");
+        const oldStatus = this.memberUpdate.oldStatus;
+        const newStatus = this.memberUpdate.newStatus;
+        return (
+            (oldStatus === "creator" && (newStatus === "administrator" || newStatus === "member")) ||
+            (oldStatus === "administrator" && newStatus === "member")
+        );
     }
 
-    /**
-     * Get the user who was updated
-     */
-    get user(): User {
-        return this.chatMemberUpdate.new_chat_member.user;
-    }
+
 
     /**
-     * Get the chat where the update occurred
-     */
-    get chat(): Chat {
-        return this.chatMemberUpdate.chat;
-    }
-
-    /**
-     * Send a message to the chat
+     * Send a message to the chat where the status update occurred
      * @param messageText Text of the message
      * @param messageOptions Additional options for sending the message
+     * @param asReply Whether to quote a message (not relevant for chat member updates, but kept for interface consistency)
      */
-    async reply(messageText: string, messageOptions: SendMessageOptions = {}): Promise<Message> {
-        return this.bot.sendMessage(this.chatMemberUpdate.chat.id, messageText, messageOptions);
+    async reply(messageText: string, messageOptions: SendMessageOptions = {}, asReply: boolean = false): Promise<Message> {
+        return this.bot.sendMessage(this.chatId, messageText, messageOptions);
     }
 
     /**
-     * Ban the user from the chat
-     * @param untilDate Date when the user will be unbanned (0 or not specified - forever)
+     * Ban a user from the chat
+     * @param userId User ID to ban, defaults to the user whose status changed
+     * @param untilDate Date when the user will be unbanned, in Unix time
      * @param revokeMessages Pass True to delete all messages from the chat for the user
      */
-    async banUser(untilDate?: number, revokeMessages?: boolean): Promise<boolean> {
-        return this.bot.banChatMember(this.chatMemberUpdate.chat.id, this.user.id, untilDate, revokeMessages);
+    async banChatMember(userId?: number, untilDate?: number, revokeMessages?: boolean): Promise<boolean> {
+        return this.bot.callApi("banChatMember", {
+            chat_id: this.chatId,
+            user_id: userId || this.userId,
+            until_date: untilDate,
+            revoke_messages: revokeMessages,
+        });
     }
 
     /**
-     * Unban the user from the chat
+     * Unban a user from the chat
+     * @param userId User ID to unban, defaults to the user whose status changed
      * @param onlyIfBanned Pass True to unban only if the user is banned
      */
-    async unbanUser(onlyIfBanned?: boolean): Promise<boolean> {
-        return this.bot.unbanChatMember(this.chatMemberUpdate.chat.id, this.user.id, onlyIfBanned);
+    async unbanChatMember(userId?: number, onlyIfBanned?: boolean): Promise<boolean> {
+        return this.bot.callApi("unbanChatMember", {
+            chat_id: this.chatId,
+            user_id: userId || this.userId,
+            only_if_banned: onlyIfBanned,
+        });
     }
 
     /**
@@ -134,7 +165,13 @@ export class ChatMemberUpdateContextImpl extends BaseContextImpl implements Chat
      * @returns True on success
      */
     async restrictChatMember(permissions: ChatPermissions, untilDate?: number, chatId?: number): Promise<boolean> {
-        return this.bot.restrictChatMember(chatId || this.chatMemberUpdate.chat.id, this.userId, permissions, untilDate);
+        const targetChatId = chatId || this.chatId;
+        return this.bot.callApi("restrictChatMember", {
+            chat_id: targetChatId,
+            user_id: this.userId,
+            permissions: permissions,
+            until_date: untilDate
+        });
     }
 
     /**
@@ -144,6 +181,9 @@ export class ChatMemberUpdateContextImpl extends BaseContextImpl implements Chat
      * @returns The member's status in the specified chat
      */
     async isChatMemberOf(chatId: number | string): Promise<ChatMember> {
-        return this.bot.getChatMember(chatId, this.userId);
+        return this.bot.callApi("getChatMember", {
+            chat_id: chatId,
+            user_id: this.userId
+        });
     }
 }

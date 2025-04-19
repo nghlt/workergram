@@ -16,7 +16,9 @@ export {
   ChatMemberLeft,
   ChatMemberBanned,
   ForumTopic,
-  Sticker
+  Sticker,
+  InlineQuery,
+  InlineQueryResult
 } from '@grammyjs/types'
 
 

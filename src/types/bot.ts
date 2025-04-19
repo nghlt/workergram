@@ -9,13 +9,28 @@ import {
   EditForumTopicOptions,
   SetWebhookOptions,
 } from "./options";
-import { FilterFunction } from "./eventHandlers";
+import { FilterFunction, MessageHandler, GenericHandler } from "./eventHandlers";
 
 /**
  * Bot interface
  */
 
 export interface BotInterface {
+  /**
+   * Register a handler for command messages
+   * @param command The command to handle (without the leading slash)
+   * @param handler The handler function
+   * @param filter Additional filter function (optional)
+   */
+  onCommand(command: string, handler: MessageHandler, filter?: FilterFunction): void;
+  
+  /**
+   * Register a handler for Telegram update types
+   * @param updateType The type of update to handle
+   * @param handler The handler function
+   * @param filter Optional filter function
+   */
+  onUpdate(updateType: UpdateType, handler: GenericHandler<any>, filter?: FilterFunction): void;
   /**
    * Call the Telegram API
    * @param method The method to call

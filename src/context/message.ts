@@ -1,7 +1,7 @@
 import { Message, Update, Chat, ChatMember, ChatPermissions } from "@grammyjs/types";
 import { ForumTopic } from "../types";
 import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, ForwardMessageOptions, CopyMessageOptions, CreateForumTopicOptions, EditForumTopicOptions } from "../types/options";
-import { MessageContext } from "../types/context";
+import { MessageContext, ChatInfo, MessageInfo } from "../types/context";
 import { BotInterface } from "../types/bot";
 import { BaseContextImpl } from "./base";
 
@@ -11,68 +11,87 @@ import { BaseContextImpl } from "./base";
  */
 
 export class MessageContextImpl extends BaseContextImpl implements MessageContext {
-    message: Message;
-    userId: number;
+    // Frequently accessed properties at top level
     chatId: number | string;
-    topicId?: number;
+    messageId: number;
     text: string;
-    command?: string;
-    commandPayload?: string;
-    firstName?: string;
-    lastName?: string;
-    fullName?: string;
-    username?: string;
-    name?: string;
+    
+    // Organized property groups
+    chat: ChatInfo;
+    message: MessageInfo;
 
     constructor(bot: BotInterface, update: Update) {
         super(bot, update);
-        this.message = update.message!;
-        this.userId = this.message.from?.id || 0;
-        this.chatId = this.message.chat.id;
-        this.topicId = this.message.message_thread_id;
-        this.text = this.message.text!;
+        const message = update.message!;
 
-        // Set user properties if the message has a sender
-        if (this.message.from) {
-            this.firstName = this.message.from.first_name;
-            this.lastName = this.message.from.last_name;
-            this.username = this.message.from.username;
-
-            // Create fullName from first and last name
-            this.fullName = this.firstName + (this.lastName ? ` ${this.lastName}` : "");
-
-            // Create name property that combines fullName and username
-            this.name = this.fullName + (this.username ? ` (@${this.username})` : "");
-        }
-
-        // Parse command if present
+        // Set top-level properties
+        this.chatId = message.chat.id;
+        this.messageId = message.message_id;
+        this.text = message.text || "";
+        
+        // Initialize chat object
+        this.chat = {
+            id: message.chat.id,
+            topicId: message.message_thread_id,
+            type: message.chat.type,
+            title: message.chat.title
+        };
+        
+        // Initialize message info object
+        const messageData = message;
+        const messageType = messageData.text ? "text" : 
+                          messageData.photo ? "photo" : 
+                          messageData.video ? "video" : 
+                          messageData.document ? "document" : 
+                          messageData.audio ? "audio" : 
+                          messageData.voice ? "voice" : 
+                          messageData.animation ? "animation" : 
+                          messageData.sticker ? "sticker" : 
+                          "other";
+        
+        // Parse command if present and initialize message info
+        let command: string | undefined = undefined;
+        let commandPayload: string | undefined = undefined;
+        
         if (this.text && this.text.startsWith("/")) {
             const commandMatch = this.text.match(/^\/([a-zA-Z0-9_]+)(?:@\w+)?(?:\s+(.*))?$/);
             if (commandMatch) {
-                this.command = commandMatch[1];
-                this.commandPayload = commandMatch[2];
+                command = commandMatch[1];
+                commandPayload = commandMatch[2];
             }
         }
+        
+        this.message = {
+            id: this.messageId,
+            text: this.text,
+            command,
+            commandPayload,
+            date: message.date,
+            isEdited: false
+        };
     }
 
     /**
      * Reply to the current message
      * @param messageText Text of the reply
      * @param messageOptions Additional options for sending the message
+     * @param asReply Whether to quote the original message (default: true)
      */
-    async reply(messageText: string, messageOptions: SendMessageOptions = {}): Promise<Message> {
-        // Automatically include message_thread_id if it exists and not already specified
-        const options: SendMessageOptions = {
-            reply_to_message_id: this.message.message_id,
-            ...messageOptions,
-        };
-
-        // Add message_thread_id for forum topics if not already specified
-        if (this.topicId && !options.message_thread_id) {
-            options.message_thread_id = this.topicId;
+    async reply(messageText: string, messageOptions: SendMessageOptions = {}, asReply: boolean = false): Promise<Message> {
+        // Create options object
+        const options: SendMessageOptions = { ...messageOptions };
+        
+        // Automatically include reply_to_message_id if asReply is true
+        if (asReply) {
+            options.reply_to_message_id = this.messageId;
         }
 
-        return this.bot.sendMessage(this.message.chat.id, messageText, options);
+        // Add message_thread_id for forum topics if not already specified
+        if (this.chat.topicId && !options.message_thread_id) {
+            options.message_thread_id = this.chat.topicId;
+        }
+
+        return this.bot.sendMessage(this.chatId, messageText, options);
     }
 
     /**
@@ -82,8 +101,8 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      */
     async editText(messageText: string, messageOptions: SendMessageOptions = {}): Promise<Message | boolean> {
         return this.bot.callApi("editMessageText", {
-            chat_id: this.message.chat.id,
-            message_id: this.message.message_id,
+            chat_id: this.chatId,
+            message_id: this.messageId,
             text: messageText,
             ...messageOptions,
         });
@@ -92,10 +111,10 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
     /**
      * Delete the current message
      */
-    async delete(): Promise<boolean> {
+    async deleteMessage(): Promise<boolean> {
         return this.bot.callApi("deleteMessage", {
-            chat_id: this.message.chat.id,
-            message_id: this.message.message_id,
+            chat_id: this.chatId,
+            message_id: this.messageId,
         });
     }
 
@@ -103,40 +122,46 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * Send a photo in reply to the current message
      * @param photo Photo to send (file ID or URL)
      * @param options Additional options for sending the photo
+     * @param asReply Whether to quote the original message (default: true)
      */
-    async replyWithPhoto(photo: string, options: SendPhotoOptions = {}): Promise<Message> {
-        // Automatically include message_thread_id if it exists and not already specified
-        const photoOptions: SendPhotoOptions = {
-            reply_to_message_id: this.message.message_id,
-            ...options,
-        };
-
-        // Add message_thread_id for forum topics if not already specified
-        if (this.topicId && !photoOptions.message_thread_id) {
-            photoOptions.message_thread_id = this.topicId;
+    async replyWithPhoto(photo: string, options: SendPhotoOptions = {}, asReply: boolean = false): Promise<Message> {
+        // Create options object
+        const photoOptions: SendPhotoOptions = { ...options };
+        
+        // Automatically include reply_to_message_id if asReply is true
+        if (asReply) {
+            photoOptions.reply_to_message_id = this.messageId;
         }
 
-        return this.bot.sendPhoto(this.message.chat.id, photo, photoOptions);
+        // Add message_thread_id for forum topics if not already specified
+        if (this.chat.topicId && !photoOptions.message_thread_id) {
+            photoOptions.message_thread_id = this.chat.topicId;
+        }
+
+        return this.bot.sendPhoto(this.chatId, photo, photoOptions);
     }
 
     /**
      * Send a document in reply to the current message
      * @param document Document to send (file ID, URL, or File object)
      * @param options Additional options for sending the document
+     * @param asReply Whether to quote the original message (default: true)
      */
-    async replyWithDocument(document: string, options: SendDocumentOptions = {}): Promise<Message> {
-        // Automatically include message_thread_id if it exists and not already specified
-        const docOptions: SendDocumentOptions = {
-            reply_to_message_id: this.message.message_id,
-            ...options,
-        };
-
-        // Add message_thread_id for forum topics if not already specified
-        if (this.topicId && !docOptions.message_thread_id) {
-            docOptions.message_thread_id = this.topicId;
+    async replyWithDocument(document: string, options: SendDocumentOptions = {}, asReply: boolean = false): Promise<Message> {
+        // Create options object
+        const docOptions: SendDocumentOptions = { ...options };
+        
+        // Automatically include reply_to_message_id if asReply is true
+        if (asReply) {
+            docOptions.reply_to_message_id = this.messageId;
         }
 
-        return this.bot.sendDocument(this.message.chat.id, document, docOptions);
+        // Add message_thread_id for forum topics if not already specified
+        if (this.chat.topicId && !docOptions.message_thread_id) {
+            docOptions.message_thread_id = this.chat.topicId;
+        }
+
+        return this.bot.sendDocument(this.chatId, document, docOptions);
     }
 
     /**
@@ -148,7 +173,7 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
         // Automatically include message_thread_id if specified in options
         const forwardOptions = { ...options };
 
-        return this.bot.forwardMessage(toChatId, this.message.chat.id, this.message.message_id, forwardOptions);
+        return this.bot.forwardMessage(toChatId, this.chatId, this.messageId, forwardOptions);
     }
 
     /**
@@ -160,7 +185,7 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
         // Automatically include message_thread_id if it exists and not already specified
         const copyOptions: CopyMessageOptions = { ...options };
 
-        return this.bot.copyMessage(toChatId, this.message.chat.id, this.message.message_id, copyOptions);
+        return this.bot.copyMessage(toChatId, this.chatId, this.messageId, copyOptions);
     }
 
     /**
@@ -168,7 +193,7 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      */
     async getChat(): Promise<Chat> {
         return this.bot.callApi("getChat", {
-            chat_id: this.message.chat.id,
+            chat_id: this.chatId,
         });
     }
 
@@ -179,7 +204,7 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @param revokeMessages Pass True to delete all messages from the chat for the user
      */
     async banChatMember(userId: number, untilDate?: number, revokeMessages?: boolean): Promise<boolean> {
-        return this.bot.banChatMember(this.message.chat.id, userId, untilDate, revokeMessages);
+        return this.bot.banChatMember(this.chatId, userId, untilDate, revokeMessages);
     }
 
     /**
@@ -188,7 +213,7 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @param onlyIfBanned Pass True to unban only if the user is banned
      */
     async unbanChatMember(userId: number, onlyIfBanned?: boolean): Promise<boolean> {
-        return this.bot.unbanChatMember(this.message.chat.id, userId, onlyIfBanned);
+        return this.bot.unbanChatMember(this.chatId, userId, onlyIfBanned);
     }
 
     /**
@@ -209,10 +234,22 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @returns True on success
      */
     async restrictChatMember(permissions: ChatPermissions, untilDate?: number, chatId?: number): Promise<boolean> {
-        return this.bot.restrictChatMember(chatId || this.message.chat.id, this.userId, permissions, untilDate);
+        return this.bot.restrictChatMember(chatId || this.chatId, this.userId, permissions, untilDate);
     }
 
     // Forum topic management methods
+    /**
+     * Delete a forum topic along with all its messages
+     * @param messageThreadId Identifier of the forum topic
+     * @returns True on success
+     */
+    async deleteForumTopic(messageThreadId: number): Promise<boolean> {
+        return this.bot.callApi("deleteForumTopic", {
+            chat_id: this.chatId,
+            message_thread_id: messageThreadId
+        });
+    }
+
     /**
      * Create a new forum topic in the current chat
      * @param name Name for the forum topic
@@ -220,7 +257,11 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @returns Information about the created forum topic
      */
     async createForumTopic(name: string, options: CreateForumTopicOptions = {}): Promise<ForumTopic> {
-        return this.bot.createForumTopic(this.message.chat.id, name, options);
+        return this.bot.callApi("createForumTopic", {
+            chat_id: this.chatId,
+            name,
+            ...options
+        });
     }
 
     /**
@@ -230,7 +271,11 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @returns True on success
      */
     async editForumTopic(messageThreadId: number, options: EditForumTopicOptions): Promise<boolean> {
-        return this.bot.editForumTopic(this.message.chat.id, messageThreadId, options);
+        return this.bot.callApi("editForumTopic", {
+            chat_id: this.chatId,
+            message_thread_id: messageThreadId,
+            ...options
+        });
     }
 
     /**
@@ -239,7 +284,10 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @returns True on success
      */
     async closeForumTopic(messageThreadId: number): Promise<boolean> {
-        return this.bot.closeForumTopic(this.message.chat.id, messageThreadId);
+        return this.bot.callApi("closeForumTopic", {
+            chat_id: this.chatId,
+            message_thread_id: messageThreadId
+        });
     }
 
     /**
@@ -248,16 +296,10 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @returns True on success
      */
     async reopenForumTopic(messageThreadId: number): Promise<boolean> {
-        return this.bot.reopenForumTopic(this.message.chat.id, messageThreadId);
-    }
-
-    /**
-     * Delete a forum topic along with all its messages
-     * @param messageThreadId Identifier of the forum topic
-     * @returns True on success
-     */
-    async deleteForumTopic(messageThreadId: number): Promise<boolean> {
-        return this.bot.deleteForumTopic(this.message.chat.id, messageThreadId);
+        return this.bot.callApi("reopenForumTopic", {
+            chat_id: this.chatId,
+            message_thread_id: messageThreadId
+        });
     }
 
     /**
@@ -266,7 +308,10 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @returns True on success
      */
     async unpinAllForumTopicMessages(messageThreadId: number): Promise<boolean> {
-        return this.bot.unpinAllForumTopicMessages(this.message.chat.id, messageThreadId);
+        return this.bot.callApi("unpinAllForumTopicMessages", {
+            chat_id: this.chatId,
+            message_thread_id: messageThreadId
+        });
     }
 
     /**
@@ -274,7 +319,9 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @returns True on success
      */
     async hideGeneralForumTopic(): Promise<boolean> {
-        return this.bot.hideGeneralForumTopic(this.message.chat.id);
+        return this.bot.callApi("hideGeneralForumTopic", {
+            chat_id: this.chatId
+        });
     }
 
     /**
@@ -282,6 +329,8 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @returns True on success
      */
     async unhideGeneralForumTopic(): Promise<boolean> {
-        return this.bot.unhideGeneralForumTopic(this.message.chat.id);
+        return this.bot.callApi("unhideGeneralForumTopic", {
+            chat_id: this.chatId
+        });
     }
 }

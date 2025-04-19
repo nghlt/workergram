@@ -3,11 +3,9 @@ import { Update, Message, User, ChatPermissions, WebhookInfo, ForumTopic, ChatMe
 import { Sticker } from "./types";
 import { ApiResponse } from "./types";
 import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, CopyMessageOptions, AnswerCallbackQueryOptions, SetWebhookOptions, CreateForumTopicOptions, EditForumTopicOptions, MessageHandler, ChatMemberUpdateHandler, GenericHandler, FilterFunction, UpdateType, ApiEndpoints, CallbackQueryHandler } from "./types";
-
+import { filters } from "./filters";
 import { ChatMemberUpdateContextImpl } from "./context/chatMemberUpdate";
 import { MessageContextImpl } from "./context/message";
-
-
 
 /**
  * Main Bot class for interacting with the Telegram Bot API
@@ -44,27 +42,27 @@ export class Bot {
   /**
    * Register a handler for message updates
    */
-  on(event: "message", handler: MessageHandler, filter?: FilterFunction): void;
+  onUpdate(event: "message", handler: MessageHandler, filter?: FilterFunction): void;
 
   /**
    * Register a handler for callback query updates
    */
-  on(event: "callback_query", handler: CallbackQueryHandler, filter?: FilterFunction): void;
+  onUpdate(event: "callback_query", handler: CallbackQueryHandler, filter?: FilterFunction): void;
 
   /**
    * Register a handler for chat member updates
    */
-  on(event: "chat_member", handler: ChatMemberUpdateHandler, filter?: FilterFunction): void;
+  onUpdate(event: "chat_member", handler: ChatMemberUpdateHandler, filter?: FilterFunction): void;
 
   /**
    * Register a handler for any update type
    */
-  on<T>(event: UpdateType, handler: GenericHandler<T>, filter?: FilterFunction): void;
+  onUpdate<T>(event: UpdateType, handler: GenericHandler<T>, filter?: FilterFunction): void;
 
   /**
-   * Implementation of the on method
+   * Implementation of the onUpdate method
    */
-  on(event: UpdateType, handler: (ctx: any) => Promise<any> | any, filter?: FilterFunction): void {
+  onUpdate(event: UpdateType, handler: (ctx: any) => Promise<any> | any, filter?: FilterFunction): void {
     if (filter?.compatibleEvents && !filter.compatibleEvents.includes(event)) {
       throw new Error(`Filter is not compatible with event "${event}". Allowed: ${filter.compatibleEvents.join(", ")}`);
     }
@@ -77,6 +75,33 @@ export class Bot {
       handler: handler as GenericHandler<any>,
       filter,
     });
+  }
+  
+  
+  /**
+   * Register a handler for command messages
+   * @param command The command to handle (without the leading slash)
+   * @param handler The handler function
+   * @param filter Additional filter function (optional)
+   */
+  onCommand(command: string, handler: MessageHandler, filter?: FilterFunction): void {
+    // Combine the command filter with any additional filter if provided
+    const commandFilter = filters.command(command);
+    
+    let combinedFilter: FilterFunction | undefined;
+    
+    if (filter) {
+      combinedFilter = (update: Update) => {
+        return commandFilter(update) && (filter ? filter(update) : true);
+      };
+      // Preserve the compatible events property
+      combinedFilter.compatibleEvents = ["message"];
+    } else {
+      combinedFilter = commandFilter;
+    }
+
+    // Register the command handler as a message handler with the command filter
+    this.onUpdate("message", handler, combinedFilter);
   }
 
   /**
