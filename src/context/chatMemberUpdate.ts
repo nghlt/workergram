@@ -123,7 +123,7 @@ export class ChatMemberUpdateContextImpl extends BaseContextImpl implements Chat
      * Send a message to the chat where the status update occurred
      * @param messageText Text of the message
      * @param messageOptions Additional options for sending the message
-     * @param asReply Whether to quote a message (not relevant for chat member updates, but kept for interface consistency)
+     * @param asReply Whether to quote the original message (default: false)
      */
     async reply(messageText: string, messageOptions: SendMessageOptions = {}, asReply: boolean = false): Promise<Message> {
         return this.bot.sendMessage(this.chatId, messageText, messageOptions);

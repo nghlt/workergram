@@ -143,6 +143,7 @@ export class CallbackQueryContextImpl extends BaseContextImpl implements Callbac
      * Reply to the associated message
      * @param messageText Text of the reply
      * @param messageOptions Additional options for sending the message
+     * @param asReply Whether to quote the original message (default: false)
      */
     async reply(messageText: string, messageOptions: SendMessageOptions = {}, asReply: boolean = false): Promise<Message> {
         if (!this.chatId) {

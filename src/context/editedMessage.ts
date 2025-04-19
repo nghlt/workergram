@@ -79,6 +79,7 @@ export class EditedMessageContextImpl extends BaseContextImpl implements EditedM
      * Reply to the edited message
      * @param messageText Text of the reply
      * @param messageOptions Additional options for sending the message
+     * @param asReply Whether to quote the original message (default: false)
      */
     async reply(messageText: string, messageOptions: SendMessageOptions = {}, asReply: boolean = false): Promise<Message> {
         // Create options object
@@ -111,6 +112,7 @@ export class EditedMessageContextImpl extends BaseContextImpl implements EditedM
      * Send a photo in reply to the edited message
      * @param photo Photo to send (file ID, URL, or File object)
      * @param options Additional options for sending the photo
+     * @param asReply Whether to quote the original message (default: false)
      */
     async replyWithPhoto(photo: string, options: SendPhotoOptions = {}, asReply: boolean = false): Promise<Message> {
         // Create options object
@@ -133,6 +135,7 @@ export class EditedMessageContextImpl extends BaseContextImpl implements EditedM
      * Send a document in reply to the edited message
      * @param document Document to send (file ID, URL, or File object)
      * @param options Additional options for sending the document
+     * @param asReply Whether to quote the original message (default: false)
      */
     async replyWithDocument(document: string, options: SendDocumentOptions = {}, asReply: boolean = false): Promise<Message> {
         // Create options object
