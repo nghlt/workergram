@@ -1,3 +1,8 @@
+/**
+ * src/context/editedMessage.ts
+ * Provides EditedMessageContextImpl for handling 'edited_message' updates in Workergram.
+ */
+
 import { Message, Update, Chat, ChatMember, ChatPermissions } from "@grammyjs/types";
 import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, ForwardMessageOptions, CopyMessageOptions } from "../types/options";
 import { EditedMessageContext, UserInfo, ChatInfo, MessageInfo } from "../types/context";

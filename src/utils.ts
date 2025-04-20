@@ -1,6 +1,8 @@
-// File: utils.ts
+/**
+ * src/utils.ts
+ * Utility functions for parsing updates, extracting data, and formatting output in Workergram.
+ */
 import { Update } from "@grammyjs/types";
-
 /**
  * Parse command and arguments from a message text
  * @param text Message text

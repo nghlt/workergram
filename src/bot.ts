@@ -1,14 +1,21 @@
-// Import only the types we actually use directly in this file
+/**
+ * src/bot.ts
+ * Main Bot class for interacting with the Telegram Bot API on Cloudflare Workers.
+ * Provides methods to register update and command handlers and dispatch incoming updates.
+ */
 import { Update, Message, User, ChatPermissions, WebhookInfo, ForumTopic, ChatMember } from "./types";
 import { Sticker } from "./types";
 import { ApiResponse } from "./types";
 import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, CopyMessageOptions, AnswerCallbackQueryOptions, SetWebhookOptions, CreateForumTopicOptions, EditForumTopicOptions, MessageHandler, ChatMemberUpdateHandler, GenericHandler, FilterFunction, UpdateType, ApiEndpoints, CallbackQueryHandler } from "./types";
 import { filters } from "./filters";
-import { ChatMemberUpdateContextImpl } from "./context/chatMemberUpdate";
-import { MessageContextImpl } from "./context/message";
+import { ChatMemberUpdateContextImpl } from "./context/chatMemberUpdate"
+import { MessageContextImpl } from "./context/message"
+import { InlineQueryContextImpl } from "./context/inlineQuery"
+import { ChosenInlineResultContextImpl } from "./context/chosenInlineResult"
 
 /**
- * Main Bot class for interacting with the Telegram Bot API
+ * Main Bot class for interacting with the Telegram Bot API.
+ * Use onUpdate and onCommand to register handlers for specific update types.
  */
 export class Bot {
   private token: string;
@@ -53,6 +60,16 @@ export class Bot {
    * Register a handler for chat member updates
    */
   onUpdate(event: "chat_member", handler: ChatMemberUpdateHandler, filter?: FilterFunction): void;
+  
+  /**
+   * Register a handler for inline query updates
+   */
+  onUpdate(event: "inline_query", handler: GenericHandler<InlineQueryContextImpl>, filter?: FilterFunction): void;
+  
+  /**
+   * Register a handler for chosen inline result updates
+   */
+  onUpdate(event: "chosen_inline_result", handler: GenericHandler<ChosenInlineResultContextImpl>, filter?: FilterFunction): void;
 
   /**
    * Register a handler for any update type
@@ -114,6 +131,10 @@ export class Bot {
       return new MessageContextImpl(this, update);
     } else if ("chat_member" in update && update.chat_member) {
       return new ChatMemberUpdateContextImpl(this, update, "chat_member");
+    } else if ("inline_query" in update && update.inline_query) {
+      return new InlineQueryContextImpl(this, update);
+    } else if ("chosen_inline_result" in update && update.chosen_inline_result) {
+      return new ChosenInlineResultContextImpl(this, update);
     } else {
       // Generic context for other update types
       return { bot: this, update };

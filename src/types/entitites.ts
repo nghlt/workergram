@@ -1,10 +1,15 @@
+/**
+ * src/types/entities.ts
+ * Defines the MessageEntity interface representing special entities in Telegram messages,
+ * such as mentions, hashtags, commands, formatting, and custom emojis.
+ */
 import { User } from "@grammyjs/types";
 
 
 /**
- * MessageEntity type for representing special entities in messages
+ * Represents a special entity in a message, including its type, offset, length,
+ * and any related metadata like URLs, user mentions, or language.
  */
-
 export interface MessageEntity {
   type: "mention" |
   "hashtag" |
@@ -70,4 +75,3 @@ export interface ReplyMarkup {
   resize_keyboard?: boolean;
   is_persistent?: boolean;
 }
-

@@ -1,3 +1,8 @@
+/**
+ * src/context/base.ts
+ * Provides BaseContextImpl: base implementation for all update contexts,
+ * initializing common properties and extracting user information.
+ */
 import { Update, User } from "@grammyjs/types";
 import { BaseContext, UserInfo } from "../types/context";
 import { BotInterface } from "../types/bot";

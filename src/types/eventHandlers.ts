@@ -1,3 +1,7 @@
+/**
+ * src/types/eventHandlers.ts
+ * Defines event handler and filter types for Workergram contexts.
+ */
 import { Update } from "@grammyjs/types";
 import { UpdateType } from "./bot";
 import { MessageContext, EditedMessageContext, CallbackQueryContext, ChatMemberUpdateContext } from "./context";

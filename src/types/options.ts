@@ -1,3 +1,8 @@
+/**
+ * src/types/options.ts
+ * Defines option interfaces for various Telegram API methods in Workergram, including send, forward, and callback query options.
+ */
+
 import { MessageEntity, ReplyMarkup } from "./entitites";
 
 

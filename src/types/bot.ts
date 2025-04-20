@@ -1,3 +1,8 @@
+/**
+ * src/types/bot.ts
+ * Defines BotInterface, API endpoints, and update types for Workergram.
+ */
+
 import { Message, ChatPermissions, WebhookInfo, User, ChatMember, Sticker, ForumTopic } from "@grammyjs/types";
 import {
   SendMessageOptions,
@@ -23,7 +28,7 @@ export interface BotInterface {
    * @param filter Additional filter function (optional)
    */
   onCommand(command: string, handler: MessageHandler, filter?: FilterFunction): void;
-  
+
   /**
    * Register a handler for Telegram update types
    * @param updateType The type of update to handle
@@ -37,7 +42,7 @@ export interface BotInterface {
    * @param params The parameters to pass
    * @returns The result
    */
-  callApi<T>(method: string, params?: Record<string, any>): Promise<T>;
+  callApi<T>(method: ApiEndpoints, params?: Record<string, any>): Promise<T>;
   // Messaging methods
   sendMessage(chatId: number | string, messageText: string, messageOptions?: SendMessageOptions): Promise<Message>;
   sendPhoto(chatId: number | string, photo: string, options?: SendPhotoOptions): Promise<Message>;
@@ -92,12 +97,10 @@ export interface File {
 /**
  * Telegram update types
  */
-export type UpdateType = "message" | "chat_member" | "callback_query";
+export type UpdateType = "message" | "chat_member" | "callback_query" | "inline_query" | "chosen_inline_result" ;
 // | "edited_message"
 // | "channel_post"
 // | "edited_channel_post"
-// | "inline_query"
-// | "chosen_inline_result"
 // | "shipping_query"
 // | "pre_checkout_query"
 // | "poll"
@@ -120,22 +123,87 @@ export interface ApiResponse<T> {
 }
 
 export type ApiEndpoints =
-  | "sendMessage"
-  | "forwardMessage"
-  | "copyMessage"
-  | "sendPhoto"
-  | "sendDocument"
-  | "answerCallbackQuery"
+  | "getUpdates"
   | "setWebhook"
   | "deleteWebhook"
   | "getWebhookInfo"
   | "getMe"
-  | "getChatMember"
+  | "logOut"
+  | "close"
+  | "sendMessage"
+  | "forwardMessage"
+  | "copyMessage"
+  | "sendPhoto"
+  | "sendAudio"
+  | "sendDocument"
+  | "sendVideo"
+  | "sendAnimation"
+  | "sendVoice"
+  | "sendVideoNote"
+  | "sendMediaGroup"
+  | "sendLocation"
+  | "editMessageLiveLocation"
+  | "stopMessageLiveLocation"
+  | "sendVenue"
+  | "sendContact"
+  | "sendPoll"
+  | "sendDice"
+  | "sendChatAction"
+  | "getUserProfilePhotos"
+  | "getFile"
   | "banChatMember"
   | "unbanChatMember"
   | "restrictChatMember"
   | "promoteChatMember"
   | "setChatAdministratorCustomTitle"
+  | "setChatPermissions"
+  | "exportChatInviteLink"
+  | "createChatInviteLink"
+  | "editChatInviteLink"
+  | "revokeChatInviteLink"
+  | "approveChatJoinRequest"
+  | "declineChatJoinRequest"
+  | "setChatPhoto"
+  | "deleteChatPhoto"
+  | "setChatTitle"
+  | "setChatDescription"
+  | "pinChatMessage"
+  | "unpinChatMessage"
+  | "unpinAllChatMessages"
+  | "leaveChat"
+  | "getChat"
+  | "getChatAdministrators"
+  | "getChatMembersCount"
+  | "getChatMember"
+  | "getChatMenuButton"
+  | "setChatMenuButton"
+  | "setMyCommands"
+  | "getMyCommands"
+  | "deleteMyCommands"
+  | "sendSticker"
+  | "getStickerSet"
+  | "uploadStickerFile"
+  | "createNewStickerSet"
+  | "addStickerToSet"
+  | "setStickerPositionInSet"
+  | "deleteStickerFromSet"
+  | "setStickerSetThumb"
+  | "editMessageText"
+  | "editMessageCaption"
+  | "editMessageMedia"
+  | "editMessageReplyMarkup"
+  | "deleteMessage"
+  | "answerInlineQuery"
+  | "answerCallbackQuery"
+  | "answerWebAppQuery"
+  | "sendInvoice"
+  | "answerShippingQuery"
+  | "answerPreCheckoutQuery"
+  | "createInvoiceLink"
+  | "sendGame"
+  | "setGameScore"
+  | "getGameHighScores"
+  | "setPassportDataErrors"
   | "createForumTopic"
   | "editForumTopic"
   | "closeForumTopic"
@@ -146,8 +214,8 @@ export type ApiEndpoints =
   | "unhideGeneralForumTopic"
   | "unpinAllForumTopicMessages";
 
-  export type HandlerEntry = {
-    event: UpdateType;
-    handler: (ctx: any) => any;
-    filter?: FilterFunction;
-  };
+export type HandlerEntry = {
+  event: UpdateType;
+  handler: (ctx: any) => any;
+  filter?: FilterFunction;
+};

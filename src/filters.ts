@@ -1,3 +1,8 @@
+/**
+ * src/filters.ts
+ * Defines filter functions for matching and filtering Telegram update events in Workergram.
+ */
+
 import { ChatMemberRestricted, Update } from "@grammyjs/types";
 import { FilterFunction } from "./types/eventHandlers";
 import { UpdateType } from "./types/bot";

@@ -1,3 +1,8 @@
+/**
+ * src/types/index.ts
+ * Re-exports all Workergram type definitions and interfaces for convenient imports.
+ */
+
 // Export types from grammyjs/types for convenience
 export {
   Update,
@@ -20,7 +25,6 @@ export {
   InlineQuery,
   InlineQueryResult
 } from '@grammyjs/types'
-
 
 export * from './bot'
 export * from './context'

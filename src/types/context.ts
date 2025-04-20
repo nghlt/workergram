@@ -1,4 +1,10 @@
-import { Update, Message, Chat, ChatMember, ChatPermissions, CallbackQuery, ChatMemberUpdated, User, InlineQuery, InlineQueryResultArticle, InlineQueryResultPhoto, InlineQueryResultDocument, InlineQueryResultVideo, InlineQueryResultLocation } from "@grammyjs/types";
+/**
+ * src/types/context.ts
+ * Defines context interfaces for different Telegram update types in Workergram,
+ * including user, chat, and message contexts.
+ */
+
+import { Update, Message, Chat, ChatMember, ChatPermissions, InlineQueryResultArticle, InlineQueryResultPhoto, InlineQueryResultDocument, InlineQueryResultVideo, InlineQueryResultLocation } from "@grammyjs/types";
 import { BotInterface, ForumTopic, InlineQueryResult } from ".";
 import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, CopyMessageOptions, CreateForumTopicOptions, EditForumTopicOptions, AnswerCallbackQueryOptions, AnswerInlineQueryOptions } from "./options";
 
@@ -51,10 +57,20 @@ export interface InlineQueryInfo {
   chatType?: string;
 }
 
-import { MessageContextImpl } from "../context/messageContext";
-import { CallbackQueryContextImpl } from "../context/callbackQueryContext";
-import { ChatMemberUpdateContextImpl } from "../context/chatMemberUpdateContext";
-import { EditedMessageContextImpl } from "../context/editedMessageContext";
+export interface ChosenInlineResultInfo {
+  resultId: string;
+  query: string;
+  inlineMessageId?: string;
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
+}
+
+import { MessageContextImpl } from "../context/message";
+import { CallbackQueryContextImpl } from "../context/callbackQuery";
+import { ChatMemberUpdateContextImpl } from "../context/chatMemberUpdate";
+import { EditedMessageContextImpl } from "../context/editedMessage";
 
 // Context classes forward declarations
 
@@ -194,4 +210,16 @@ export interface InlineQueryContext extends BaseContext {
   
   // Utility methods
   generateResultId(): string;
+}
+
+export interface ChosenInlineResultContext extends BaseContext {
+  // Frequently accessed properties at top level
+  resultId: string;
+  query: string;
+  
+  // Organized property groups
+  chosenResult: ChosenInlineResultInfo;
+  
+  // Chat member utilities
+  isChatMemberOf(chatId: number | string): Promise<ChatMember>;
 }

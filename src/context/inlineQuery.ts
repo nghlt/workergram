@@ -1,3 +1,8 @@
+/**
+ * src/context/inlineQuery.ts
+ * Provides InlineQueryContextImpl for handling 'inline_query' updates in Workergram.
+ */
+
 import { InlineQuery, Update, ChatMember, InlineQueryResultArticle, InlineQueryResultPhoto, InlineQueryResultDocument, InlineQueryResultVideo, InlineQueryResultLocation } from "@grammyjs/types";
 import { AnswerInlineQueryOptions } from "../types/options";
 import { InlineQueryContext, UserInfo, InlineQueryInfo } from "../types/context";

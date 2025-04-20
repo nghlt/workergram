@@ -1,4 +1,9 @@
-import { CallbackQuery, Message, Update, ChatMember, ChatPermissions } from "@grammyjs/types";
+/**
+ * src/context/callbackQuery.ts
+ * Provides CallbackQueryContextImpl for handling 'callback_query' updates in Workergram.
+ */
+
+import { Message, Update, ChatMember, ChatPermissions } from "@grammyjs/types";
 import { AnswerCallbackQueryOptions, SendMessageOptions } from "../types/options";
 import { CallbackQueryContext, UserInfo, ChatInfo, MessageInfo, CallbackInfo } from "../types/context";
 import { BotInterface } from "../types/bot";
