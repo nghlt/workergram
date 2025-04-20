@@ -1,6 +1,6 @@
 {
   "name": "workergram",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "A TypeScript library for building Telegram bots on Cloudflare Workers",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
