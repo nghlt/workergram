@@ -67,10 +67,7 @@ export interface ChosenInlineResultInfo {
   };
 }
 
-import { MessageContextImpl } from "../context/message";
-import { CallbackQueryContextImpl } from "../context/callbackQuery";
-import { ChatMemberUpdateContextImpl } from "../context/chatMemberUpdate";
-import { EditedMessageContextImpl } from "../context/editedMessage";
+ 
 
 // Context classes forward declarations
 

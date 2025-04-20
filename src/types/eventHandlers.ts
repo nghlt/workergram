@@ -8,7 +8,7 @@ import { MessageContext, EditedMessageContext, CallbackQueryContext, ChatMemberU
 
 
 // Event handlers
-export type GenericHandler<T> = (ctx: T) => Promise<void> | void;
+export type GenericHandler<T> = (ctx: T) => any | Promise<any>;
 export type MessageHandler = GenericHandler<MessageContext>;
 export type EditedMessageHandler = GenericHandler<EditedMessageContext>;
 export type CallbackQueryHandler = GenericHandler<CallbackQueryContext>;
