@@ -1,4 +1,4 @@
-node_modules
-temp
-dist
-examples
+node_modules/
+temp/
+dist/
+examples/
