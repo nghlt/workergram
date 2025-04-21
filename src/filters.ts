@@ -162,7 +162,7 @@ export const filters = {
    * Filter for specific chat ID
    * @param chatId The chat ID to match
    */
-  chatId: (chatId: number): FilterFunction =>
+  chatId: (chatId: number | number[]): FilterFunction =>
     withEvents(
       (update) => {
         let chat;
@@ -171,7 +171,7 @@ export const filters = {
         else if ("chat_member" in update && update.chat_member) chat = update.chat_member.chat;
         else if ("my_chat_member" in update && update.my_chat_member) chat = update.my_chat_member.chat;
         else return false;
-        return chat.id === chatId;
+        return (Array.isArray(chatId) ? chatId : [chatId]).includes(chat.id);
       },
       ["message", "callback_query", "chat_member"]
     ),
@@ -180,7 +180,7 @@ export const filters = {
    * Filter for specific user ID
    * @param userId The user ID to match
    */
-  userId: (userId: number): FilterFunction =>
+  userId: (userId: number | number[]): FilterFunction =>
     withEvents(
       (update) => {
         let user;
@@ -189,7 +189,7 @@ export const filters = {
         else if ("chat_member" in update && update.chat_member) user = update.chat_member.from;
         else if ("my_chat_member" in update && update.my_chat_member) user = update.my_chat_member.from;
         else return false;
-        return user?.id === userId;
+        return (Array.isArray(userId) ? userId : [userId]).includes(user?.id || 0);
       },
       ["message", "chat_member"]
     ),
