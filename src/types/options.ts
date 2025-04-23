@@ -3,7 +3,9 @@
  * Defines option interfaces for various Telegram API methods in Workergram, including send, forward, and callback query options.
  */
 
-import { MessageEntity, ReplyMarkup } from "./entitites";
+import { MessageEntity } from "@grammyjs/types";
+import { MessageEntities } from "./entitites";
+import { ReplyMarkup } from "./markup";
 
 
 // API options types
@@ -11,7 +13,7 @@ import { MessageEntity, ReplyMarkup } from "./entitites";
 export interface SendMessageOptions {
   message_thread_id?: number; // Forum topic identifier
   parse_mode?: "Markdown" | "MarkdownV2" | "HTML";
-  entities?: MessageEntity[];
+  entities?: MessageEntities;
   disable_web_page_preview?: boolean;
   disable_notification?: boolean;
   protect_content?: boolean;
@@ -24,7 +26,7 @@ export interface SendPhotoOptions {
   message_thread_id?: number; // Forum topic identifier
   caption?: string;
   parse_mode?: "Markdown" | "MarkdownV2" | "HTML";
-  caption_entities?: MessageEntity[];
+  caption_entities?: MessageEntities;
   has_spoiler?: boolean;
   disable_notification?: boolean;
   protect_content?: boolean;
@@ -38,7 +40,7 @@ export interface SendDocumentOptions {
   thumbnail?: string;
   caption?: string;
   parse_mode?: "Markdown" | "MarkdownV2" | "HTML";
-  caption_entities?: MessageEntity[];
+  caption_entities?: MessageEntities;
   disable_content_type_detection?: boolean;
   disable_notification?: boolean;
   protect_content?: boolean;
@@ -51,7 +53,7 @@ export interface CopyMessageOptions {
   message_thread_id?: number; // Forum topic identifier
   caption?: string;
   parse_mode?: "Markdown" | "MarkdownV2" | "HTML";
-  caption_entities?: MessageEntity[];
+  caption_entities?: MessageEntities;
   disable_notification?: boolean;
   protect_content?: boolean;
   reply_to_message_id?: number;
