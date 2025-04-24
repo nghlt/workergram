@@ -4,7 +4,7 @@ import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, ForwardMessa
 import { MessageContext, ChatInfo, MessageInfo } from "../types/context";
 import { BotInterface } from "../types/bot";
 import { BaseContextImpl } from "./base";
-
+import { MessageInstance } from "../wrappers/messageInstance";
 
 /**
  * Context class for message updates
@@ -77,7 +77,7 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @param messageOptions Additional options for sending the message
      * @param asReply Whether to quote the original message (default: false)
      */
-    async reply(messageText: string, messageOptions: SendMessageOptions = {}, asReply: boolean = false): Promise<Message> {
+    async reply(messageText: string, messageOptions: SendMessageOptions = {}, asReply: boolean = false): Promise<MessageInstance> {
         // Create options object
         const options: SendMessageOptions = { ...messageOptions };
         
@@ -99,20 +99,24 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @param messageText New text for the message
      * @param messageOptions Additional options for editing the message
      */
-    async editText(messageText: string, messageOptions: SendMessageOptions = {}): Promise<Message | boolean> {
-        return this.bot.callApi("editMessageText", {
+    async editText(messageText: string, messageOptions: SendMessageOptions = {}): Promise<MessageInstance | boolean> {
+        const result = await this.bot.callApi<Message | boolean>("editMessageText", {
             chat_id: this.chatId,
             message_id: this.messageId,
             text: messageText,
             ...messageOptions,
         });
+        if (typeof result === "boolean") {
+            return result;
+        }
+        return new MessageInstance(this.bot, result);
     }
 
     /**
      * Delete the current message
      */
     async deleteMessage(): Promise<boolean> {
-        return this.bot.callApi("deleteMessage", {
+        return this.bot.callApi<boolean>("deleteMessage", {
             chat_id: this.chatId,
             message_id: this.messageId,
         });
@@ -124,7 +128,7 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @param options Additional options for sending the photo
      * @param asReply Whether to quote the original message (default: false)
      */
-    async replyWithPhoto(photo: string, options: SendPhotoOptions = {}, asReply: boolean = false): Promise<Message> {
+    async replyWithPhoto(photo: string, options: SendPhotoOptions = {}, asReply: boolean = false): Promise<MessageInstance> {
         // Create options object
         const photoOptions: SendPhotoOptions = { ...options };
         
@@ -147,7 +151,7 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @param options Additional options for sending the document
      * @param asReply Whether to quote the original message (default: false)
      */
-    async replyWithDocument(document: string, options: SendDocumentOptions = {}, asReply: boolean = false): Promise<Message> {
+    async replyWithDocument(document: string, options: SendDocumentOptions = {}, asReply: boolean = false): Promise<MessageInstance> {
         // Create options object
         const docOptions: SendDocumentOptions = { ...options };
         
@@ -169,7 +173,7 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @param toChatId Target chat ID to forward the message to
      * @param options Additional options for forwarding the message
      */
-    async forwardMessage(toChatId: number | string, options: ForwardMessageOptions = {}): Promise<Message> {
+    async forwardMessage(toChatId: number | string, options: ForwardMessageOptions = {}): Promise<MessageInstance> {
         // Automatically include message_thread_id if specified in options
         const forwardOptions = { ...options };
 

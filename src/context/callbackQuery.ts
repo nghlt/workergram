@@ -8,7 +8,7 @@ import { AnswerCallbackQueryOptions, SendMessageOptions } from "../types/options
 import { CallbackQueryContext, UserInfo, ChatInfo, MessageInfo, CallbackInfo } from "../types/context";
 import { BotInterface } from "../types/bot";
 import { BaseContextImpl } from "./base";
-
+import { MessageInstance } from "../wrappers/messageInstance";
 
 /**
  * Context class for callback query updates
@@ -99,17 +99,21 @@ export class CallbackQueryContextImpl extends BaseContextImpl implements Callbac
      * @param messageText New text for the message
      * @param messageOptions Additional options for editing the message
      */
-    async editText(messageText: string, messageOptions: SendMessageOptions = {}): Promise<Message | boolean> {
+    async editText(messageText: string, messageOptions: SendMessageOptions = {}): Promise<MessageInstance | boolean> {
         if (!this.chatId || !this.messageId) {
             throw new Error("Cannot edit message: no message in callback query");
         }
 
-        return this.bot.callApi("editMessageText", {
+        const result = await this.bot.callApi<Message | boolean>("editMessageText", {
             chat_id: this.chatId,
             message_id: this.messageId,
             text: messageText,
             ...messageOptions,
         });
+        if (typeof result === "boolean") {
+            return result;
+        }
+        return new MessageInstance(this.bot, result);
     }
 
     /**
@@ -117,17 +121,21 @@ export class CallbackQueryContextImpl extends BaseContextImpl implements Callbac
      * @param replyMarkup New reply markup for the message
      * @param options Additional options for editing the message
      */
-    async editReplyMarkup(replyMarkup: any, options: any = {}): Promise<Message | boolean> {
+    async editReplyMarkup(replyMarkup: any, options: any = {}): Promise<MessageInstance | boolean> {
         if (!this.chatId || !this.messageId) {
             throw new Error("Cannot edit message: no message in callback query");
         }
 
-        return this.bot.callApi("editMessageReplyMarkup", {
+        const result = await this.bot.callApi<Message | boolean>("editMessageReplyMarkup", {
             chat_id: this.chatId,
             message_id: this.messageId,
             reply_markup: replyMarkup,
             ...options,
         });
+        if (typeof result === "boolean") {
+            return result;
+        }
+        return new MessageInstance(this.bot, result);
     }
 
     /**
@@ -150,7 +158,7 @@ export class CallbackQueryContextImpl extends BaseContextImpl implements Callbac
      * @param messageOptions Additional options for sending the message
      * @param asReply Whether to quote the original message (default: false)
      */
-    async reply(messageText: string, messageOptions: SendMessageOptions = {}, asReply: boolean = false): Promise<Message> {
+    async reply(messageText: string, messageOptions: SendMessageOptions = {}, asReply: boolean = false): Promise<MessageInstance> {
         if (!this.chatId) {
             throw new Error("Cannot reply to message: no chat in callback query");
         }

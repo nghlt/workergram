@@ -7,6 +7,7 @@
 import { Update, Message, Chat, ChatMember, ChatPermissions, InlineQueryResultArticle, InlineQueryResultPhoto, InlineQueryResultDocument, InlineQueryResultVideo, InlineQueryResultLocation } from "@grammyjs/types";
 import { BotInterface, ForumTopic, InlineQueryResult } from ".";
 import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, CopyMessageOptions, CreateForumTopicOptions, EditForumTopicOptions, AnswerCallbackQueryOptions, AnswerInlineQueryOptions } from "./options";
+import type { MessageInstance } from "../wrappers/messageInstance";
 
 // Common interfaces for context objects
 export interface UserInfo {
@@ -67,8 +68,6 @@ export interface ChosenInlineResultInfo {
   };
 }
 
- 
-
 // Context classes forward declarations
 
 export interface BaseContext {
@@ -92,12 +91,12 @@ export interface MessageContext extends BaseContext {
   message: MessageInfo;
   
   // Message-specific methods
-  reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<Message>;
-  editText(messageText: string, messageOptions?: SendMessageOptions): Promise<Message | boolean>;
+  reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<MessageInstance>;
+  editText(messageText: string, messageOptions?: SendMessageOptions): Promise<MessageInstance | boolean>;
   deleteMessage(): Promise<boolean>;
-  replyWithPhoto(photo: string, options?: SendPhotoOptions, asReply?: boolean): Promise<Message>;
-  replyWithDocument(document: string, options?: SendDocumentOptions, asReply?: boolean): Promise<Message>;
-  forwardMessage(toChatId: number | string, options?: any): Promise<Message>;
+  replyWithPhoto(photo: string, options?: SendPhotoOptions, asReply?: boolean): Promise<MessageInstance>;
+  replyWithDocument(document: string, options?: SendDocumentOptions, asReply?: boolean): Promise<MessageInstance>;
+  forwardMessage(toChatId: number | string, options?: any): Promise<MessageInstance>;
   copyMessage(toChatId: number | string, options?: CopyMessageOptions): Promise<{ message_id: number; }>;
   getChat(): Promise<Chat>;
   banChatMember(userId: number, untilDate?: number, revokeMessages?: boolean): Promise<boolean>;
@@ -129,11 +128,11 @@ export interface CallbackQueryContext extends BaseContext {
 
   // Callback query specific methods
   answer(text?: string, options?: AnswerCallbackQueryOptions): Promise<boolean>;
-  reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<Message>;
-  editText(messageText: string, messageOptions?: SendMessageOptions): Promise<Message | boolean>;
-  editReplyMarkup(replyMarkup: any, options?: any): Promise<Message | boolean>;
+  reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<MessageInstance>;
+  editText(messageText: string, messageOptions?: SendMessageOptions): Promise<MessageInstance | boolean>;
+  editReplyMarkup(replyMarkup: any, options?: any): Promise<MessageInstance | boolean>;
   deleteMessage(): Promise<boolean>;
-  reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<Message>;
+  reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<MessageInstance>;
   isChatMemberOf(chatId: number | string, userId?: number): Promise<ChatMember>;
   restrictChatMember(permissions: ChatPermissions, untilDate?: number, chatId?: number): Promise<boolean>;
   banChatMember(userId: number, untilDate?: number, revokeMessages?: boolean): Promise<boolean>;
@@ -151,11 +150,11 @@ export interface EditedMessageContext extends BaseContext {
   message: MessageInfo;
   
   // Message specific methods
-  reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<Message>;
+  reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<MessageInstance>;
   deleteMessage(): Promise<boolean>;
-  replyWithPhoto(photo: string, options?: SendPhotoOptions, asReply?: boolean): Promise<Message>;
-  replyWithDocument(document: string, options?: SendDocumentOptions, asReply?: boolean): Promise<Message>;
-  forwardMessage(toChatId: number | string, options?: any): Promise<Message>;
+  replyWithPhoto(photo: string, options?: SendPhotoOptions, asReply?: boolean): Promise<MessageInstance>;
+  replyWithDocument(document: string, options?: SendDocumentOptions, asReply?: boolean): Promise<MessageInstance>;
+  forwardMessage(toChatId: number | string, options?: any): Promise<MessageInstance>;
   copyMessage(toChatId: number | string, options?: CopyMessageOptions): Promise<{ message_id: number; }>;
   getChat(): Promise<Chat>;
   isChatMemberOf(chatId: number | string, userId?: number): Promise<ChatMember>;
@@ -177,7 +176,7 @@ export interface ChatMemberUpdateContext extends BaseContext {
   isLeaving(): boolean;
   isPromoted(): boolean;
   isDemoted(): boolean;
-  reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<Message>;
+  reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<MessageInstance>;
   banChatMember(userId?: number, untilDate?: number, revokeMessages?: boolean): Promise<boolean>;
   unbanChatMember(userId?: number, onlyIfBanned?: boolean): Promise<boolean>;
   isChatMemberOf(chatId: number | string): Promise<ChatMember>;

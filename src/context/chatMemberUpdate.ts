@@ -6,7 +6,7 @@
 import { ChatMemberUpdated, ChatMember, Update, User, Chat, Message, ChatPermissions } from "@grammyjs/types";
 import { SendMessageOptions, ChatMemberUpdateContext, BotInterface, UserInfo, ChatInfo, MemberUpdateInfo } from "../types";
 import { BaseContextImpl } from "./base";
-
+import { MessageInstance } from "../wrappers/messageInstance";
 
 /**
  * Context class for chat member updates
@@ -130,7 +130,7 @@ export class ChatMemberUpdateContextImpl extends BaseContextImpl implements Chat
      * @param messageOptions Additional options for sending the message
      * @param asReply Whether to quote the original message (default: false)
      */
-    async reply(messageText: string, messageOptions: SendMessageOptions = {}, asReply: boolean = false): Promise<Message> {
+    async reply(messageText: string, messageOptions: SendMessageOptions = {}, asReply: boolean = false): Promise<MessageInstance> {
         return this.bot.sendMessage(this.chatId, messageText, messageOptions);
     }
 

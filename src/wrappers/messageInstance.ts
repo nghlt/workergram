@@ -1,4 +1,4 @@
-// src/utils/messageInstance.ts
+// src/wrappers/messageInstance.ts
 import type { Message } from "@grammyjs/types";
 import type { BotInterface } from "../types/bot";
 
@@ -36,7 +36,6 @@ export class MessageInstance {
 
   /** Delete this message */
   async delete(): Promise<boolean> {
-    // deleting returns boolean, no need to wrap
     return this.bot.callApi<boolean>("deleteMessage", {
       chat_id: this.chatId,
       message_id: this.messageId,
@@ -45,35 +44,54 @@ export class MessageInstance {
 
   /** Reply to this message */
   async reply(text: string, options: Record<string, any> = {}): Promise<MessageInstance> {
-    const sent = await this.bot.sendMessage(this.chatId, text, {
+    const result = await this.bot.callApi<Message>("sendMessage", {
+      chat_id: this.chatId,
+      text,
       reply_to_message_id: this.messageId,
       ...options,
     });
-    // wrap raw Message in a MessageInstance
-    return new MessageInstance(this.bot, sent);
+    return new MessageInstance(this.bot, result);
   }
 
   /** Reply with a photo */
   async replyWithPhoto(photo: string, options: Record<string, any> = {}): Promise<MessageInstance> {
-    const sent = await this.bot.sendPhoto(this.chatId, photo, options);
-    return new MessageInstance(this.bot, sent);
+    const result = await this.bot.callApi<Message>("sendPhoto", {
+      chat_id: this.chatId,
+      photo,
+      ...options,
+    });
+    return new MessageInstance(this.bot, result);
   }
 
   /** Reply with a document */
   async replyWithDocument(document: string, options: Record<string, any> = {}): Promise<MessageInstance> {
-    const sent = await this.bot.sendDocument(this.chatId, document, options);
-    return new MessageInstance(this.bot, sent);
+    const result = await this.bot.callApi<Message>("sendDocument", {
+      chat_id: this.chatId,
+      document,
+      ...options,
+    });
+    return new MessageInstance(this.bot, result);
   }
 
   /** Forward this message to another chat */
   async forward(toChatId: number | string, options: Record<string, any> = {}): Promise<MessageInstance> {
-    const sent = await this.bot.forwardMessage(toChatId, this.chatId, this.messageId, options);
-    return new MessageInstance(this.bot, sent);
+    const result = await this.bot.callApi<Message>("forwardMessage", {
+      chat_id: toChatId,
+      from_chat_id: this.chatId,
+      message_id: this.messageId,
+      ...options,
+    });
+    return new MessageInstance(this.bot, result);
   }
 
   /** Copy this message to another chat. Returns the new message ID. */
   async copy(toChatId: number | string, options: Record<string, any> = {}): Promise<number> {
-    const result = await this.bot.copyMessage(toChatId, this.chatId, this.messageId, options);
+    const result = await this.bot.callApi<{ message_id: number }>("copyMessage", {
+      chat_id: toChatId,
+      from_chat_id: this.chatId,
+      message_id: this.messageId,
+      ...options,
+    });
     return result.message_id;
   }
 }

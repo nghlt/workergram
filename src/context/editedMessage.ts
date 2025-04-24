@@ -8,7 +8,7 @@ import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, ForwardMessa
 import { EditedMessageContext, UserInfo, ChatInfo, MessageInfo } from "../types/context";
 import { BotInterface } from "../types/bot";
 import { BaseContextImpl } from "./base";
-
+import { MessageInstance } from "../wrappers/messageInstance";
 
 /**
  * Context class for edited message updates
@@ -86,7 +86,7 @@ export class EditedMessageContextImpl extends BaseContextImpl implements EditedM
      * @param messageOptions Additional options for sending the message
      * @param asReply Whether to quote the original message (default: false)
      */
-    async reply(messageText: string, messageOptions: SendMessageOptions = {}, asReply: boolean = false): Promise<Message> {
+    async reply(messageText: string, messageOptions: SendMessageOptions = {}, asReply: boolean = false): Promise<MessageInstance> {
         // Create options object
         const options: SendMessageOptions = { ...messageOptions };
         
@@ -119,7 +119,7 @@ export class EditedMessageContextImpl extends BaseContextImpl implements EditedM
      * @param options Additional options for sending the photo
      * @param asReply Whether to quote the original message (default: false)
      */
-    async replyWithPhoto(photo: string, options: SendPhotoOptions = {}, asReply: boolean = false): Promise<Message> {
+    async replyWithPhoto(photo: string, options: SendPhotoOptions = {}, asReply: boolean = false): Promise<MessageInstance> {
         // Create options object
         const photoOptions: SendPhotoOptions = { ...options };
         
@@ -142,7 +142,7 @@ export class EditedMessageContextImpl extends BaseContextImpl implements EditedM
      * @param options Additional options for sending the document
      * @param asReply Whether to quote the original message (default: false)
      */
-    async replyWithDocument(document: string, options: SendDocumentOptions = {}, asReply: boolean = false): Promise<Message> {
+    async replyWithDocument(document: string, options: SendDocumentOptions = {}, asReply: boolean = false): Promise<MessageInstance> {
         // Create options object
         const docOptions: SendDocumentOptions = { ...options };
         
@@ -164,7 +164,7 @@ export class EditedMessageContextImpl extends BaseContextImpl implements EditedM
      * @param toChatId Target chat ID to forward the message to
      * @param options Additional options for forwarding the message
      */
-    async forwardMessage(toChatId: number | string, options: ForwardMessageOptions = {}): Promise<Message> {
+    async forwardMessage(toChatId: number | string, options: ForwardMessageOptions = {}): Promise<MessageInstance> {
         return this.bot.forwardMessage(toChatId, this.chatId, this.messageId, options);
     }
 

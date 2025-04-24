@@ -12,6 +12,7 @@ import { ChatMemberUpdateContextImpl } from "./context/chatMemberUpdate"
 import { MessageContextImpl } from "./context/message"
 import { InlineQueryContextImpl } from "./context/inlineQuery"
 import { ChosenInlineResultContextImpl } from "./context/chosenInlineResult"
+import { MessageInstance } from "./wrappers/messageInstance";
 
 /**
  * Main Bot class for interacting with the Telegram Bot API.
@@ -264,12 +265,13 @@ export class Bot {
    * @param options Additional options for sending the message
    * @returns The sent message
    */
-  async sendMessage(chatId: number | string, text: string, options: SendMessageOptions = {}): Promise<Message> {
-    return this._callApi<Message>("sendMessage", {
+  async sendMessage(chatId: number | string, text: string, options: SendMessageOptions = {}): Promise<MessageInstance> {
+    const result = await this._callApi<Message>("sendMessage", {
       chat_id: chatId,
       text,
       ...options,
     });
+    return new MessageInstance(this, result);
   }
 
   /**
@@ -280,13 +282,14 @@ export class Bot {
    * @param options Additional options for forwarding the message
    * @returns The forwarded message
    */
-  async forwardMessage(chatId: number | string, fromChatId: number | string, messageId: number, options: any = {}): Promise<Message> {
-    return this._callApi<Message>("forwardMessage", {
+  async forwardMessage(chatId: number | string, fromChatId: number | string, messageId: number, options: any = {}): Promise<MessageInstance> {
+    const result = await this._callApi<Message>("forwardMessage", {
       chat_id: chatId,
       from_chat_id: fromChatId,
       message_id: messageId,
       ...options,
     });
+    return new MessageInstance(this, result);
   }
 
   /**
@@ -314,12 +317,13 @@ export class Bot {
    * @param options Additional options for sending the photo
    * @returns The sent message
    */
-  async sendPhoto(chatId: number | string, photo: string, options: SendPhotoOptions = {}): Promise<Message> {
-    return this._callApi<Message>("sendPhoto", {
+  async sendPhoto(chatId: number | string, photo: string, options: SendPhotoOptions = {}): Promise<MessageInstance> {
+    const result = await this._callApi<Message>("sendPhoto", {
       chat_id: chatId,
       photo,
       ...options,
     });
+    return new MessageInstance(this, result);
   }
 
   /**
@@ -329,12 +333,13 @@ export class Bot {
    * @param options Additional options for sending the document
    * @returns The sent message
    */
-  async sendDocument(chatId: number | string, document: string, options: SendDocumentOptions = {}): Promise<Message> {
-    return this._callApi<Message>("sendDocument", {
+  async sendDocument(chatId: number | string, document: string, options: SendDocumentOptions = {}): Promise<MessageInstance> {
+    const result = await this._callApi<Message>("sendDocument", {
       chat_id: chatId,
       document,
       ...options,
     });
+    return new MessageInstance(this, result);
   }
 
   /**

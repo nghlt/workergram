@@ -15,6 +15,7 @@ import {
   SetWebhookOptions,
 } from "./options";
 import { FilterFunction, MessageHandler, GenericHandler } from "./eventHandlers";
+import type { MessageInstance } from "../wrappers/messageInstance";
 
 /**
  * Bot interface
@@ -44,10 +45,10 @@ export interface BotInterface {
    */
   callApi<T>(method: ApiEndpoints, params?: Record<string, any>): Promise<T>;
   // Messaging methods
-  sendMessage(chatId: number | string, messageText: string, messageOptions?: SendMessageOptions): Promise<Message>;
-  sendPhoto(chatId: number | string, photo: string, options?: SendPhotoOptions): Promise<Message>;
-  sendDocument(chatId: number | string, document: string, options?: SendDocumentOptions): Promise<Message>;
-  forwardMessage(chatId: number | string, fromChatId: number | string, messageId: number, options?: any): Promise<Message>;
+  sendMessage(chatId: number | string, messageText: string, messageOptions?: SendMessageOptions): Promise<MessageInstance>;
+  sendPhoto(chatId: number | string, photo: string, options?: SendPhotoOptions): Promise<MessageInstance>;
+  sendDocument(chatId: number | string, document: string, options?: SendDocumentOptions): Promise<MessageInstance>;
+  forwardMessage(chatId: number | string, fromChatId: number | string, messageId: number, options?: any): Promise<MessageInstance>;
   copyMessage(chatId: number | string, fromChatId: number | string, messageId: number, options?: CopyMessageOptions): Promise<{ message_id: number }>;
 
   // Interactive methods
