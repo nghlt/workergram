@@ -3,7 +3,7 @@
  * Defines BotInterface, API endpoints, and update types for Workergram.
  */
 
-import { Message, ChatPermissions, WebhookInfo, User, ChatMember, Sticker, ForumTopic } from "@grammyjs/types";
+import { Message, ChatPermissions, WebhookInfo, User, ChatMember, Sticker, ForumTopic, Chat } from "@grammyjs/types";
 import {
   SendMessageOptions,
   SendPhotoOptions,
@@ -80,6 +80,11 @@ export interface BotInterface {
   // Info methods
   getMe(): Promise<User>;
   getChatMember(chatId: number | string, userId: number): Promise<ChatMember>;
+  /**
+   * Get information about a chat
+   * @param chatId Chat ID
+   */
+  getChat(chatId: number | string): Promise<Chat>;
 }
 
 /**

@@ -3,7 +3,7 @@
  * Main Bot class for interacting with the Telegram Bot API on Cloudflare Workers.
  * Provides methods to register update and command handlers and dispatch incoming updates.
  */
-import { Update, Message, User, ChatPermissions, WebhookInfo, ForumTopic, ChatMember } from "./types";
+import { Update, Message, User, ChatPermissions, WebhookInfo, ForumTopic, ChatMember, Chat } from "./types";
 import { Sticker } from "./types";
 import { ApiResponse } from "./types";
 import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, CopyMessageOptions, AnswerCallbackQueryOptions, SetWebhookOptions, CreateForumTopicOptions, EditForumTopicOptions, MessageHandler, ChatMemberUpdateHandler, GenericHandler, FilterFunction, UpdateType, ApiEndpoints, CallbackQueryHandler } from "./types";
@@ -400,6 +400,14 @@ export class Bot {
       chat_id: chatId,
       user_id: userId,
     });
+  }
+
+  /**
+   * Get information about a chat
+   * @param chatId Chat ID
+   */
+  async getChat(chatId: number | string): Promise<Chat> {
+    return this._callApi<Chat>("getChat", { chat_id: chatId });
   }
 
   /**
