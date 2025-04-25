@@ -117,34 +117,6 @@ The typical workflow of a bot follows these steps:
    await bot.processUpdate(update);
    ```
 
-### Two Ways to Create a Bot and Process Updates
-
-#### Option 1: Providing Update During Creation
-```typescript
-// Creating bot with update in constructor
-const bot = new Bot(token, update);
-```
-- The update is processed immediately during construction
-- Useful for single-request serverless handling
-- All handlers must be defined before the bot is created
-
-#### Option 2: Creating Bot and Processing Update Separately
-```typescript
-// Creating bot without update
-const bot = new Bot(token);
-
-// Set up handlers (notice the new method names)
-bot.onCommand('start', startHandler);
-bot.onUpdate('message', msgHandler);
-bot.onUpdate('callback_query', cbQueryHandler);
-
-// Process update later
-await bot.processUpdate(update);
-```
-- Initialize, then set up handlers, then process
-- More flexible approach
-- Typical for webhook-based applications
-
 ## Filter System
 
 WorkerGram includes a powerful filtering system to help you handle exactly the updates you want. Here's a comprehensive guide to the available filters:
@@ -257,6 +229,38 @@ The `Bot` class provides a comprehensive set of methods for interacting with the
 **Info Methods:**
 - `getMe()`: Get information about the bot
 - `getChatMember(chatId, userId)`: Get info about a chat member
+- `getChat(chatId)`: Get information about a chat
+
+## Wrappers
+
+### MessageInstance
+
+**Description:**
+A wrapper class for Telegram messages returning `MessageInstance` when sending/editing messages to ensure consistent method chaining and helper functions.
+
+**Properties:**
+- `raw`: The raw Telegram `Message` object
+- `chatId`: Chat identifier
+- `messageId`: Message identifier
+
+**Methods:**
+- `editText(text: string, options?: SendMessageOptions)`: Edit this message's text, returns `Promise<MessageInstance | boolean>`. `SendMessageOptions` includes `reply_markup?: ReplyMarkup`.
+- `delete()`: Delete this message, returns `Promise<boolean>`
+- `reply(text: string, options?: SendMessageOptions, asReply?: boolean)`: Reply to this message, returns `Promise<MessageInstance>`. `SendMessageOptions` includes `reply_markup?: ReplyMarkup`.
+- `replyWithPhoto(photo: string, options?: SendPhotoOptions, asReply?: boolean)`: Send a photo in reply, returns `Promise<MessageInstance>`. `SendPhotoOptions` includes `reply_markup?: ReplyMarkup`.
+- `replyWithDocument(document: string, options?: SendDocumentOptions, asReply?: boolean)`: Send a document in reply, returns `Promise<MessageInstance>`. `SendDocumentOptions` includes `reply_markup?: ReplyMarkup`.
+- `forward(toChatId: number | string, options?: ForwardMessageOptions)`: Forward this message to another chat, returns `Promise<MessageInstance>`
+- `copy(toChatId: number | string, options?: CopyMessageOptions)`: Copy this message to another chat, returns `Promise<{ message_id: number }>`
+
+## Markup Types
+
+### ReplyMarkup
+Generic wrapper for building `reply_markup` payloads in messages.
+
+**Classes**:
+- `ReplyMarkup`: supports inline_keyboard, keyboard, resize_keyboard, one_time_keyboard, selective, remove_keyboard, force_reply.
+- `InlineKeyboardButton`: builder for inline keyboard buttons.
+- `KeyboardButton`: builder for reply keyboard buttons.
 
 ## Context Types
 
@@ -302,41 +306,18 @@ Used for handling message updates.
 - All properties from BaseContext
 
 **Methods:**
-- `reply(text, options, asReply?)`: Reply to the current message (with optional quoting)
-- `editText(text, options)`: Edit the text of the current message
-- `deleteMessage()`: Delete the current message (renamed from delete())
-- `replyWithPhoto(photo, options, asReply?)`: Send a photo in reply
-- `replyWithDocument(document, options, asReply?)`: Send a document in reply
-- `forwardTo(chatId, options?)`: Forward this message to another chat
-- `copyTo(chatId, options?)`: Copy this message to another chat
+- `reply(text: string, options?: SendMessageOptions, asReply?: boolean)`: Reply to the current message (with optional quoting).
+- `editText(text: string, options?: SendMessageOptions)`: Edit the text of the current message.
+- `deleteMessage()`: Delete the current message (renamed from delete()).
+- `replyWithPhoto(photo: string, options?: SendPhotoOptions, asReply?: boolean)`: Send a photo in reply.
+- `replyWithDocument(document: string, options?: SendDocumentOptions, asReply?: boolean)`: Send a document in reply.
+- `forwardMessage(toChatId: number | string, options?: ForwardMessageOptions)`: Forward this message to another chat, returns `Promise<MessageInstance>`
+- `copyMessage(toChatId: number | string, options?: CopyMessageOptions)`: Copy this message to another chat, returns `Promise<{ message_id: number }>`
 - `getChat()`: Get information about the chat
-- `banChatMember(userId?, untilDate?, revokeMessages?)`: Ban a user
-- `unbanChatMember(userId?, onlyIfBanned?)`: Unban a user
-- `isChatMemberOf(chatId)`: Check if the user is a member of another chat
-- `restrictChatMember(permissions, untilDate?, chatId?)`: Restrict a user
-- `createForumTopic(name, options?)`: Create a forum topic
-- `editForumTopic(options)`: Edit a forum topic
-- `closeForumTopic()`: Close a forum topic
-- `reopenForumTopic()`: Reopen a forum topic
-- `deleteForumTopic()`: Delete a forum topic
-
-**Example:**
-```typescript
-bot.on('message', ctx => {
-  // Access message properties
-  const messageId = ctx.message.message_id;
-  const chatId = ctx.message.chat.id;
-  const text = ctx.message.text;
-  
-  // Reply to the message
-  ctx.reply('Got your message!');
-  
-  // Send a photo in reply
-  ctx.replyWithPhoto('https://example.com/image.jpg', {
-    caption: 'Check out this image!'
-  });
-});
-```
+- `banChatMember(userId?: number, untilDate?: number, revokeMessages?: boolean)`: Ban a user
+- `unbanChatMember(userId?: number, onlyIfBanned?: boolean)`: Unban a user
+- `isChatMemberOf(chatId: number | string)`: Check if the user is a member of another chat
+- `restrictChatMember(permissions: ChatPermissions, untilDate?: number, chatId?: number)`: Restrict a user in the chat
 
 ### CallbackQueryContext
 
@@ -357,31 +338,15 @@ Used for handling callback query updates (button clicks).
 - All properties from BaseContext
 
 **Methods:**
-- `answer(text, options)`: Answer the callback query
-- `reply(text, options, asReply?)`: Reply to the associated message (with optional quoting)
-- `editText(text, options)`: Edit the text of the associated message
-- `editReplyMarkup(replyMarkup, options)`: Edit the reply markup
+- `answer(text?: string, options?: AnswerCallbackQueryOptions)`: Answer the callback query
+- `reply(text: string, options?: SendMessageOptions, asReply?: boolean)`: Reply to the associated message (with optional quoting).
+- `editText(text: string, options?: SendMessageOptions)`: Edit the text of the associated message.
+- `editReplyMarkup(replyMarkup: ReplyMarkup, options?: SendMessageOptions)`: Edit the reply markup
 - `deleteMessage()`: Delete the associated message
-- `replyWithPhoto(photo, options, asReply?)`: Send a photo in reply
-- `replyWithDocument(document, options, asReply?)`: Send a document in reply
-- `banChatMember(userId, untilDate?, revokeMessages?)`: Ban a user
-- `unbanChatMember(userId, onlyIfBanned?)`: Unban a user
-- `isChatMemberOf(chatId)`: Check if the user is a member of another chat
-
-**Example:**
-```typescript
-bot.on('callback_query', ctx => {
-  // Access callback query data
-  const queryId = ctx.callbackQuery.id;
-  const data = ctx.callbackQuery.data;
-  
-  // Answer the callback query (shows a notification to user)
-  ctx.answer('Button clicked!');
-  
-  // Edit the message that contained the button
-  ctx.editText('You clicked the button!');
-});
-```
+- `banChatMember(userId: number, untilDate?: number, revokeMessages?: boolean)`: Ban a user
+- `unbanChatMember(userId: number, onlyIfBanned?: boolean)`: Unban a user
+- `restrictChatMember(permissions: ChatPermissions, untilDate?: number, chatId?: number)`: Restrict a user in the chat
+- `isChatMemberOf(chatId: number | string)`: Check if the user is a member of another chat
 
 ### ChatMemberUpdateContext
 
@@ -407,31 +372,31 @@ Used for handling chat member updates (joins, leaves, etc.).
 - `isLeaving()`: Check if this is a member leaving the chat
 - `isPromoted()`: Check if this is a member being promoted
 - `isDemoted()`: Check if this is a member being demoted
-- `reply(text, options, asReply?)`: Send a message to the chat (with optional quoting)
-- `banChatMember(userId?, untilDate?, revokeMessages?)`: Ban the user from the chat (renamed from banUser())
-- `unbanChatMember(userId?, onlyIfBanned?)`: Unban the user (renamed from unbanUser())
-- `isChatMemberOf(chatId)`: Check if the user is a member of another chat
-- `restrictChatMember(permissions, untilDate?, chatId?)`: Restrict a user
+- `reply(text: string, options?: SendMessageOptions, asReply?: boolean)`: Send a message to the chat (with optional quoting).
+- `banChatMember(userId?: number, untilDate?: number, revokeMessages?: boolean)`: Ban the user from the chat (renamed from banUser())
+- `unbanChatMember(userId?: number, onlyIfBanned?: boolean)`: Unban the user (renamed from unbanUser())
+- `isChatMemberOf(chatId: number | string)`: Check if the user is a member of another chat
+- `restrictChatMember(permissions: ChatPermissions, untilDate?: number, chatId?: number)`: Restrict a user
 
-**Example:**
-```typescript
-bot.on('chat_member', ctx => {
-  // Check the type of member update
-  if (ctx.isJoining()) {
-    ctx.reply(`Welcome to the chat, ${ctx.user.first_name}!`);
-  } else if (ctx.isLeaving()) {
-    ctx.reply(`${ctx.user.first_name} has left the chat.`);
-  } else if (ctx.isPromoted()) {
-    ctx.reply(`${ctx.user.first_name} has been promoted!`);
-  } else if (ctx.isDemoted()) {
-    ctx.reply(`${ctx.user.first_name} has been demoted.`);
-  }
-  
-  // Access the old and new status
-  console.log(`Status changed from ${ctx.oldStatus} to ${ctx.newStatus}`);
-});
-```
+### EditedMessageContext
 
+Used for handling edited message updates.
+
+**Properties:**
+- `chatId`: ID of the chat where the message was edited
+- `messageId`: ID of the edited message
+- `text`: Text content of the edited message (if available)
+- `chat`: Structured chat information object
+- `message`: Structured message information object
+- All properties from BaseContext
+
+**Methods:**
+- `reply(text: string, options?: SendMessageOptions, asReply?: boolean)`: Reply to the edited message (with optional quoting).
+- `deleteMessage()`: Delete the edited message
+- `forwardMessage(toChatId: number | string, options?: ForwardMessageOptions)`: Forward this message to another chat, returns `Promise<MessageInstance>`
+- `copyMessage(toChatId: number | string, options?: CopyMessageOptions)`: Copy this message to another chat, returns `Promise<{ message_id: number }>`
+- `getChat()`: Get information about the chat
+- `restrictChatMember(permissions: ChatPermissions, untilDate?: number, chatId?: number)`: Restrict a user in the chat
 
 ### InlineQueryContext
 
@@ -447,39 +412,16 @@ Used for handling inline query updates from users typing @botname in a chat.
 - All properties from BaseContext
 
 **Methods:**
-- `answer(results, options?)`: Answer the inline query with results
-- `answerWithResults(results, options?)`: Alias for answer()
-- `isChatMemberOf(chatId)`: Check if the user is a member of another chat
+- `answer(results: InlineQueryResult[], options?: AnswerInlineQueryOptions)`: Answer the inline query with results
+- `answerWithResults(results: InlineQueryResult[], options?: AnswerInlineQueryOptions)`: Alias for answer()
+- `isChatMemberOf(chatId: number | string)`: Check if the user is a member of another chat
 - Helper methods for creating inline query results:
-  - `createArticleResult(id, title, description, text, options?)`
-  - `createPhotoResult(id, photoUrl, thumbnailUrl, title?, options?)`
-  - `createDocumentResult(id, title, documentUrl, thumbnailUrl, options?)`
-  - `createVideoResult(id, title, videoUrl, thumbnailUrl, options?)`
-  - `createLocationResult(id, title, latitude, longitude, options?)`
+  - `createArticleResult(id: string, title: string, description: string, text: string, options?: InlineQueryResultArticleOptions)`
+  - `createPhotoResult(id: string, photoUrl: string, thumbnailUrl: string, title?: string, options?: InlineQueryResultPhotoOptions)`
+  - `createDocumentResult(id: string, title: string, documentUrl: string, thumbnailUrl: string, options?: InlineQueryResultDocumentOptions)`
+  - `createVideoResult(id: string, title: string, videoUrl: string, thumbnailUrl: string, options?: InlineQueryResultVideoOptions)`
+  - `createLocationResult(id: string, title: string, latitude: number, longitude: number, options?: InlineQueryResultLocationOptions)`
 - `generateResultId()`: Generate a unique ID for inline query results
-
-### EditedMessageContext
-
-Used for handling edited message updates.
-
-**Properties:**
-- `chatId`: ID of the chat where the message was edited
-- `messageId`: ID of the edited message
-- `text`: Text content of the edited message (if available)
-- `chat`: Structured chat information object
-- `message`: Structured message information object
-- All properties from BaseContext
-
-**Methods:**
-- `reply(text, options, asReply?)`: Reply to the edited message (with optional quoting)
-- `deleteMessage()`: Delete the edited message
-- `replyWithPhoto(photo, options, asReply?)`: Send a photo in reply
-- `replyWithDocument(document, options, asReply?)`: Send a document in reply
-- `forwardTo(chatId, options?)`: Forward this message to another chat
-- `copyTo(chatId, options?)`: Copy this message to another chat
-- `banChatMember(userId?, untilDate?, revokeMessages?)`: Ban a user
-- `unbanChatMember(userId?, onlyIfBanned?)`: Unban a user
-- `isChatMemberOf(chatId)`: Check if the user is a member of another chat
 
 ## License
 
