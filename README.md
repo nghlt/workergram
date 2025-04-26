@@ -423,6 +423,9 @@ Used for handling inline query updates from users typing @botname in a chat.
   - `createLocationResult(id: string, title: string, latitude: number, longitude: number, options?: InlineQueryResultLocationOptions)`
 - `generateResultId()`: Generate a unique ID for inline query results
 
-## License
+## Support this project
 
-MIT
+<a href="https://paypal.me/ltn119412" target="_blank"><img src="https://raw.githubusercontent.com/trungnghiatn/Downgrade-MAS-Applications/main/Images/buy-me-a-coffee.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
+## License
+This project is licensed under the MIT License.
