@@ -30,12 +30,12 @@ export class CallbackQueryContextImpl extends BaseContextImpl implements Callbac
     constructor(bot: BotInterface, update: Update) {
         super(bot, update);
         const callbackQuery = update.callback_query!;
-        const originalMessage = callbackQuery.message;
+        const originalMessage = callbackQuery.message!;
         
         // Set top-level properties
         this.userId = callbackQuery.from.id;
-        this.chatId = originalMessage?.chat.id;
-        this.messageId = originalMessage?.message_id;
+        this.chatId = originalMessage.chat.id;
+        this.messageId = originalMessage.message_id;
         this.callbackData = callbackQuery.data;
         
         // Create user object

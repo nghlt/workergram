@@ -9,6 +9,7 @@ import { ApiResponse } from "./types";
 import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, CopyMessageOptions, AnswerCallbackQueryOptions, SetWebhookOptions, CreateForumTopicOptions, EditForumTopicOptions, MessageHandler, ChatMemberUpdateHandler, GenericHandler, FilterFunction, UpdateType, ApiEndpoints, CallbackQueryHandler } from "./types";
 import { filters } from "./filters";
 import { ChatMemberUpdateContextImpl } from "./context/chatMemberUpdate"
+import { CallbackQueryContextImpl } from "./context/callbackQuery"
 import { MessageContextImpl } from "./context/message"
 import { InlineQueryContextImpl } from "./context/inlineQuery"
 import { ChosenInlineResultContextImpl } from "./context/chosenInlineResult"
@@ -132,6 +133,8 @@ export class Bot {
       return new MessageContextImpl(this, update);
     } else if ("chat_member" in update && update.chat_member) {
       return new ChatMemberUpdateContextImpl(this, update, "chat_member");
+    } else if ("callback_query" in update && update.callback_query) {
+      return new CallbackQueryContextImpl(this, update);
     } else if ("inline_query" in update && update.inline_query) {
       return new InlineQueryContextImpl(this, update);
     } else if ("chosen_inline_result" in update && update.chosen_inline_result) {
