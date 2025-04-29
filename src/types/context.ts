@@ -137,10 +137,6 @@ export interface CallbackQueryContext extends BaseContext {
   restrictChatMember(permissions: ChatPermissions, untilDate?: number, chatId?: number): Promise<boolean>;
   banChatMember(userId: number, untilDate?: number, revokeMessages?: boolean): Promise<boolean>;
   unbanChatMember(userId: number, onlyIfBanned?: boolean): Promise<boolean>;
-  // Convenience wrappers for callback query context
-  answerCallbackQuery(text?: string, options?: AnswerCallbackQueryOptions): Promise<boolean>;
-  editMessageText(messageText: string, messageOptions?: SendMessageOptions): Promise<MessageInstance | boolean>;
-  editMessageReplyMarkup(replyMarkup: any, options?: any): Promise<MessageInstance | boolean>;
 }
 
 export interface EditedMessageContext extends BaseContext {

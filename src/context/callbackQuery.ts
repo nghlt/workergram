@@ -95,13 +95,6 @@ export class CallbackQueryContextImpl extends BaseContextImpl implements Callbac
     }
 
     /**
-     * Convenience alias for answer()
-     */
-    async answerCallbackQuery(text?: string, options: AnswerCallbackQueryOptions = {}): Promise<boolean> {
-        return this.answer(text, options);
-    }
-
-    /**
      * Edit the message text
      * @param messageText New text for the message
      * @param messageOptions Additional options for editing the message
@@ -124,13 +117,6 @@ export class CallbackQueryContextImpl extends BaseContextImpl implements Callbac
     }
 
     /**
-     * Convenience alias for editText()
-     */
-    async editMessageText(messageText: string, messageOptions: SendMessageOptions = {}): Promise<MessageInstance | boolean> {
-        return this.editText(messageText, messageOptions);
-    }
-
-    /**
      * Edit the message reply markup
      * @param replyMarkup New reply markup for the message
      * @param options Additional options for editing the message
@@ -150,13 +136,6 @@ export class CallbackQueryContextImpl extends BaseContextImpl implements Callbac
             return result;
         }
         return new MessageInstance(this.bot, result);
-    }
-
-    /**
-     * Convenience alias for editReplyMarkup()
-     */
-    async editMessageReplyMarkup(replyMarkup: any, options: any = {}): Promise<MessageInstance | boolean> {
-        return this.editReplyMarkup(replyMarkup, options);
     }
 
     /**
