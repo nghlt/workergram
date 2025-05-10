@@ -92,16 +92,6 @@ export function createFormData(params: Record<string, any>): FormData {
   return formData;
 }
 
-/**
- * Get the mime type for a file based on its name
- */
-export function getMimeType(fileName: string): string {
-  const extension = fileName.split(".").pop()?.toLowerCase();
-  if (!extension || !MimeTypes[extension]) {
-    return "application/octet-stream";
-  }
-  return MimeTypes[extension];
-}
 
 /**
  * Format a number as a file size with appropriate units
