@@ -34,6 +34,8 @@ import {
   SendAudioOptions,
   ChatAction,
   MediaInput,
+  FileInput,
+  FILE_INPUT_KEYS
 } from "./types";
 import { filters } from "./filters";
 import { ChatMemberUpdateContextImpl, CallbackQueryContextImpl, MessageContextImpl, InlineQueryContextImpl, ChosenInlineResultContextImpl } from "./context";
@@ -242,6 +244,13 @@ export class Bot {
     }
   }
 
+  private isFileInput(value: any): value is FileInput {
+    return typeof value === 'object' && 
+      value !== null && 
+      Object.keys(value).length === FILE_INPUT_KEYS.length &&
+      FILE_INPUT_KEYS.every(key => key in value);
+  }
+
   /**
    * Helper method to create FormData for file uploads
    * @param params Parameters to include in the form data
@@ -251,9 +260,9 @@ export class Bot {
     const formData = new FormData();
 
     for (const [key, value] of Object.entries(params)) {
-      if (value instanceof ArrayBuffer || value instanceof Uint8Array) {
+      if (this.isFileInput(value)) {
         // For direct file upload, we just send the binary data
-        formData.append(key, new Blob([value]));
+        formData.append(key, new File([value.buffer], value.fileName, { type: value.mimeType }));
       } else if (typeof value === "object" && value !== null) {
         formData.append(key, JSON.stringify(value));
       } else {
@@ -274,7 +283,9 @@ export class Bot {
     const url = `${this.baseUrl}/${method}`;
 
     // Check if we need to use FormData (if any parameter is binary data)
-    const hasFile = Object.values(params).some((value) => value instanceof ArrayBuffer || value instanceof Uint8Array);
+    const hasFile = Object.values(params).some((value) => 
+      this.isFileInput(value)
+    );
 
     let response: Response;
     if (hasFile) {

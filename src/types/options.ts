@@ -3,9 +3,12 @@
  * Defines option interfaces for various Telegram API methods in Workergram, including send, forward, and callback query options.
  */
 
- 
+
 import { MessageEntities } from "./entitites";
 import { ReplyMarkup } from "./markup";
+import { MimeTypes } from "./media";
+
+
 
 
 
@@ -25,6 +28,19 @@ export interface SendMessageOptions {
   reply_markup?: ReplyMarkup;
 }
 
+
+export interface FileInput {
+  buffer: ArrayBuffer;
+  mimeType: "image/jpeg" | "image/png" | "image/gif" | "video/mp4" | "audio/mpeg" | "application/pdf" | "application/msword" | "application/vnd.openxmlformats-officedocument.wordprocessingml.document" | "application/vnd.ms-excel" | "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" | "application/zip" | "application/json" | "text/plain" | "text/html" | "text/css" | "text/javascript" | "application/octet-stream";
+  fileName: string;
+}
+
+// Type helper to extract keys from FileInput
+export type FileInputKeys = keyof FileInput;
+
+// Constant array of required keys
+export const FILE_INPUT_KEYS: FileInputKeys[] = ['buffer', 'mimeType', 'fileName'];
+
 /**
  * Represents a file to be sent to Telegram
  * Can be:
@@ -32,7 +48,7 @@ export interface SendMessageOptions {
  * 2. URL (string) - for files to be downloaded by Telegram (max 5MB for photos, 20MB for other files)
  * 3. File data (ArrayBuffer/Uint8Array) - for direct upload (max 10MB for photos, 50MB for other files)
  */
-export type MediaInput = string | ArrayBuffer | Uint8Array;
+export type MediaInput = string | FileInput;
 
 export interface SendPhotoOptions {
   message_thread_id?: number; // Forum topic identifier

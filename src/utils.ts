@@ -6,6 +6,7 @@
  */
 
 import { Update, Message } from "@grammyjs/types";
+import { MimeTypes } from "./types/media";
 /**
  * Parse command and arguments from a message text
  * @param text Message text
@@ -96,30 +97,10 @@ export function createFormData(params: Record<string, any>): FormData {
  */
 export function getMimeType(fileName: string): string {
   const extension = fileName.split(".").pop()?.toLowerCase();
-  const mimeTypes: Record<string, string> = {
-    jpg: "image/jpeg",
-    jpeg: "image/jpeg",
-    png: "image/png",
-    gif: "image/gif",
-    webp: "image/webp",
-    mp4: "video/mp4",
-    mp3: "audio/mpeg",
-    pdf: "application/pdf",
-    doc: "application/msword",
-    docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    xls: "application/vnd.ms-excel",
-    xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    zip: "application/zip",
-    json: "application/json",
-    txt: "text/plain",
-    html: "text/html",
-    css: "text/css",
-    js: "text/javascript",
-  };
-  if (!extension || !mimeTypes[extension]) {
+  if (!extension || !MimeTypes[extension]) {
     return "application/octet-stream";
   }
-  return mimeTypes[extension];
+  return MimeTypes[extension];
 }
 
 /**
