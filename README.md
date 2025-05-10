@@ -2,6 +2,33 @@
 
 A TypeScript library for building Telegram bots on Cloudflare Workers, providing a modern, type-safe, and developer-friendly framework for serverless bot development.
 
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Basic Usage](#basic-usage)
+- [Bot Workflow](#bot-workflow)
+- [Filter System](#filter-system)
+  - [Basic Filters](#basic-filters)
+  - [Logical Operators](#logical-operators)
+  - [Custom Filters](#custom-filters)
+- [Bot Instance Methods and Properties](#bot-instance-methods-and-properties)
+  - [Core Methods](#core-methods)
+- [Wrappers](#wrappers)
+  - [Message Instance](#message-instance)
+- [Markup Types](#markup-types)
+  - [ReplyMarkup](#replymarkup)
+- [Context Types](#context-types)
+  - [BaseContext](#basecontext)
+  - [MessageContext](#messagecontext)
+  - [CallbackQueryContext](#callbackquerycontext)
+  - [ChatMemberUpdateContext](#chatmemberupdatecontext)
+  - [EditedMessageContext](#editedmessagecontext)
+  - [InlineQueryContext](#inlinequerycontext)
+- [Support This Project](#support-this-project)
+- [License](#license)
+
+
 ## Features
 
 - **TypeScript-first design** with comprehensive type definitions
@@ -423,7 +450,7 @@ Used for handling inline query updates from users typing @botname in a chat.
   - `createLocationResult(id: string, title: string, latitude: number, longitude: number, options?: InlineQueryResultLocationOptions)`
 - `generateResultId()`: Generate a unique ID for inline query results
 
-## Support this project
+## Support This Project
 
 <a href="https://paypal.me/ltn119412" target="_blank"><img src="https://raw.githubusercontent.com/trungnghiatn/Downgrade-MAS-Applications/main/Images/buy-me-a-coffee.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
