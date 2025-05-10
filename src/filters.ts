@@ -193,4 +193,12 @@ export const filters = {
       },
       ["message", "chat_member"]
     ),
+    messageType: (type: 'text' | 'photo' | 'video' | 'audio' | 'document' | 'sticker' | 'voice' | 'video_note' | 'animation'): FilterFunction => withEvents((update) => {
+      if ('message' in update && update.message) {
+        return type in update.message;
+      }
+      return false;
+    }, ["message"]),
 };
+
+

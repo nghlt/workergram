@@ -1,8 +1,11 @@
+
+
 /**
  * src/utils.ts
  * Utility functions for parsing updates, extracting data, and formatting output in Workergram.
  */
-import { Update } from "@grammyjs/types";
+
+import { Update, Message } from "@grammyjs/types";
 /**
  * Parse command and arguments from a message text
  * @param text Message text
@@ -160,4 +163,20 @@ export function escapeHTML(text: string): string {
  */
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Determine type of message
+ */
+export function determineMessageType(message: Message): 'text' | 'photo' | 'video' | 'audio' | 'document' | 'sticker' | 'voice' | 'videoNote' | 'animation' {
+  if (message.text) return 'text';
+  if (message.photo) return 'photo';
+  if (message.video) return 'video';
+  if (message.audio) return 'audio';
+  if (message.document) return 'document';
+  if (message.sticker) return 'sticker';
+  if (message.voice) return 'voice';
+  if (message.video_note) return 'videoNote';
+  if (message.animation) return 'animation';
+  return 'text';
 }

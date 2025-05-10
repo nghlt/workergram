@@ -4,10 +4,36 @@
  * including user, chat, and message contexts.
  */
 
-import { Update, Message, Chat, ChatMember, ChatPermissions, InlineQueryResultArticle, InlineQueryResultPhoto, InlineQueryResultDocument, InlineQueryResultVideo, InlineQueryResultLocation } from "@grammyjs/types";
-import { BotInterface, ForumTopic, InlineQueryResult } from ".";
-import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, CopyMessageOptions, CreateForumTopicOptions, EditForumTopicOptions, AnswerCallbackQueryOptions, AnswerInlineQueryOptions } from "./options";
+import {
+  Update,
+  Chat,
+  ChatMember,
+  ChatPermissions,
+  InlineQueryResultVideo,
+  InlineQueryResultLocation,
+  InlineQueryResultDocument,
+  InlineQueryResultPhoto,
+  InlineQueryResultArticle,
+  InlineQueryResult,
+} from "@grammyjs/types";
+import { BotInterface, ForumTopic } from ".";
+import {
+  SendMessageOptions,
+  SendPhotoOptions,
+  SendDocumentOptions,
+  CopyMessageOptions,
+  CreateForumTopicOptions,
+  EditForumTopicOptions,
+  AnswerCallbackQueryOptions,
+  AnswerInlineQueryOptions,
+  SendVideoOptions,
+  SendStickerOptions,
+  SendAudioOptions,
+  ForwardMessageOptions,
+} from "./options";
 import type { MessageInstance } from "../wrappers/messageInstance";
+import { MessageEntities } from "./entitites";
+import { WorkergramPhotoSize, WorkergramVideo, WorkergramAudio, WorkergramDocument, WorkergramSticker, WorkergramVoice, WorkergramVideoNote, WorkergramAnimation } from "./media";
 
 // Common interfaces for context objects
 export interface UserInfo {
@@ -18,14 +44,22 @@ export interface UserInfo {
   username?: string;
   displayName?: string;
 }
-
 export interface ChatInfo {
   id: number | string;
   topicId?: number;
-  type?: string;
+  type: "private" | "group" | "supergroup" | "channel";
   title?: string;
+  isForum: boolean;
 }
 
+export interface SenderInfo {
+  id?: number;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  username?: string;
+  displayName?: string;
+}
 export interface MessageInfo {
   id: number;
   text?: string;
@@ -33,6 +67,16 @@ export interface MessageInfo {
   commandPayload?: string;
   date: number;
   isEdited?: boolean;
+  type: "text" | "photo" | "video" | "audio" | "document" | "sticker" | "voice" | "videoNote" | "animation";
+  photo?: WorkergramPhotoSize[];
+  video?: WorkergramVideo;
+  audio?: WorkergramAudio;
+  document?: WorkergramDocument;
+  sticker?: WorkergramSticker;
+  voice?: WorkergramVoice;
+  videoNote?: WorkergramVideoNote;
+  animation?: WorkergramAnimation;
+  caption?: string;
 }
 
 export interface CallbackInfo {
@@ -74,7 +118,7 @@ export interface BaseContext {
   // Common properties for all contexts
   bot: BotInterface;
   update: Update;
-  
+
   // Common user information
   userId: number;
   user: UserInfo;
@@ -85,19 +129,22 @@ export interface MessageContext extends BaseContext {
   chatId: number | string;
   messageId: number;
   text: string;
-  
+  sender: SenderInfo;
   // Organized property groups
   chat: ChatInfo;
   message: MessageInfo;
-  
+
   // Message-specific methods
   reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<MessageInstance>;
   editText(messageText: string, messageOptions?: SendMessageOptions): Promise<MessageInstance | boolean>;
   deleteMessage(): Promise<boolean>;
   replyWithPhoto(photo: string, options?: SendPhotoOptions, asReply?: boolean): Promise<MessageInstance>;
+  replyWithVideo(video: string, options?: SendVideoOptions, asReply?: boolean): Promise<MessageInstance>;
+  replyWithSticker(sticker: string, options?: SendStickerOptions, asReply?: boolean): Promise<MessageInstance>;
+  replyWithAudio(audio: string, options?: SendAudioOptions, asReply?: boolean): Promise<MessageInstance>;
   replyWithDocument(document: string, options?: SendDocumentOptions, asReply?: boolean): Promise<MessageInstance>;
-  forwardMessage(toChatId: number | string, options?: any): Promise<MessageInstance>;
-  copyMessage(toChatId: number | string, options?: CopyMessageOptions): Promise<{ message_id: number; }>;
+  forwardMessage(toChatId: number | string, options?: ForwardMessageOptions): Promise<MessageInstance>;
+  copyMessage(toChatId: number | string, options?: CopyMessageOptions): Promise<{ message_id: number }>;
   getChat(): Promise<Chat>;
   banChatMember(userId: number, untilDate?: number, revokeMessages?: boolean): Promise<boolean>;
   unbanChatMember(userId: number, onlyIfBanned?: boolean): Promise<boolean>;
@@ -110,6 +157,7 @@ export interface MessageContext extends BaseContext {
   closeForumTopic(messageThreadId: number): Promise<boolean>;
   reopenForumTopic(messageThreadId: number): Promise<boolean>;
   deleteForumTopic(messageThreadId: number): Promise<boolean>;
+  getMediaFileId(): string | undefined;
   unpinAllForumTopicMessages(messageThreadId: number): Promise<boolean>;
   hideGeneralForumTopic(): Promise<boolean>;
   unhideGeneralForumTopic(): Promise<boolean>;
@@ -120,7 +168,7 @@ export interface CallbackQueryContext extends BaseContext {
   chatId?: number | string;
   messageId?: number;
   callbackData?: string;
-  
+
   // Organized property groups
   chat?: ChatInfo;
   message?: MessageInfo;
@@ -144,18 +192,18 @@ export interface EditedMessageContext extends BaseContext {
   chatId: number | string;
   messageId: number;
   text?: string;
-  
+
   // Organized property groups
   chat: ChatInfo;
   message: MessageInfo;
-  
+
   // Message specific methods
   reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<MessageInstance>;
   deleteMessage(): Promise<boolean>;
   replyWithPhoto(photo: string, options?: SendPhotoOptions, asReply?: boolean): Promise<MessageInstance>;
   replyWithDocument(document: string, options?: SendDocumentOptions, asReply?: boolean): Promise<MessageInstance>;
   forwardMessage(toChatId: number | string, options?: any): Promise<MessageInstance>;
-  copyMessage(toChatId: number | string, options?: CopyMessageOptions): Promise<{ message_id: number; }>;
+  copyMessage(toChatId: number | string, options?: CopyMessageOptions): Promise<{ message_id: number }>;
   getChat(): Promise<Chat>;
   isChatMemberOf(chatId: number | string, userId?: number): Promise<ChatMember>;
   restrictChatMember(permissions: ChatPermissions, untilDate?: number, chatId?: number): Promise<boolean>;
@@ -166,11 +214,11 @@ export interface EditedMessageContext extends BaseContext {
 export interface ChatMemberUpdateContext extends BaseContext {
   // Frequently accessed properties at top level
   chatId: number | string;
-  
+
   // Organized property groups
   chat: ChatInfo;
   memberUpdate: MemberUpdateInfo;
-  
+
   // Status check methods
   isJoining(): boolean;
   isLeaving(): boolean;
@@ -186,24 +234,24 @@ export interface ChatMemberUpdateContext extends BaseContext {
 export interface InlineQueryContext extends BaseContext {
   // Frequently accessed properties at top level
   query: string;
-  
+
   // Organized property groups
   inlineQuery: InlineQueryInfo;
-  
+
   // Answer methods
   answer(results: ReadonlyArray<InlineQueryResult>, options?: AnswerInlineQueryOptions): Promise<boolean>;
   answerWithResults(results: ReadonlyArray<InlineQueryResult>, options?: AnswerInlineQueryOptions): Promise<boolean>;
-  
+
   // Chat member utilities
   isChatMemberOf(chatId: number | string): Promise<ChatMember>;
-  
+
   // Helper methods for creating inline query results
   createArticleResult(id: string, title: string, description: string, text: string, options?: Partial<InlineQueryResultArticle>): InlineQueryResultArticle;
   createPhotoResult(id: string, photoUrl: string, thumbnailUrl: string, title?: string, options?: Partial<InlineQueryResultPhoto>): InlineQueryResultPhoto;
   createDocumentResult(id: string, title: string, documentUrl: string, thumbnailUrl: string, options?: Partial<InlineQueryResultDocument>): InlineQueryResultDocument;
   createVideoResult(id: string, title: string, videoUrl: string, thumbnailUrl: string, options?: Partial<InlineQueryResultVideo>): InlineQueryResultVideo;
   createLocationResult(id: string, title: string, latitude: number, longitude: number, options?: Partial<InlineQueryResultLocation>): InlineQueryResultLocation;
-  
+
   // Utility methods
   generateResultId(): string;
 }
@@ -212,10 +260,10 @@ export interface ChosenInlineResultContext extends BaseContext {
   // Frequently accessed properties at top level
   resultId: string;
   query: string;
-  
+
   // Organized property groups
   chosenResult: ChosenInlineResultInfo;
-  
+
   // Chat member utilities
   isChatMemberOf(chatId: number | string): Promise<ChatMember>;
 }

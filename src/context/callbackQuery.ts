@@ -4,11 +4,10 @@
  */
 
 import { Message, Update, ChatMember, ChatPermissions } from "@grammyjs/types";
-import { AnswerCallbackQueryOptions, SendMessageOptions } from "../types/options";
-import { CallbackQueryContext, UserInfo, ChatInfo, MessageInfo, CallbackInfo } from "../types/context";
-import { BotInterface } from "../types/bot";
+import { CallbackQueryContext, UserInfo, ChatInfo, MessageInfo, CallbackInfo, BotInterface, AnswerCallbackQueryOptions, SendMessageOptions  } from "../types";
 import { BaseContextImpl } from "./base";
-import { MessageInstance } from "../wrappers/messageInstance";
+import { MessageInstance } from  "../wrappers"
+import { determineMessageType } from "../utils";
 
 /**
  * Context class for callback query updates
@@ -60,7 +59,8 @@ export class CallbackQueryContextImpl extends BaseContextImpl implements Callbac
                 id: originalMessage.chat.id,
                 topicId: originalMessage.message_thread_id,
                 type: originalMessage.chat.type,
-                title: originalMessage.chat.title
+                title: originalMessage.chat.title,
+                isForum: originalMessage.chat.is_forum || false
             };
             
             // Create message object
@@ -68,7 +68,8 @@ export class CallbackQueryContextImpl extends BaseContextImpl implements Callbac
                 id: originalMessage.message_id,
                 text: originalMessage.text,
                 date: originalMessage.date,
-                isEdited: false
+                isEdited: false,
+                type: determineMessageType(originalMessage)
             };
         }
         

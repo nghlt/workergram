@@ -6,7 +6,7 @@
 import { Update, Message, User, ChatPermissions, WebhookInfo, ForumTopic, ChatMember, Chat } from "./types";
 import { Sticker } from "./types";
 import { ApiResponse } from "./types";
-import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, CopyMessageOptions, AnswerCallbackQueryOptions, SetWebhookOptions, CreateForumTopicOptions, EditForumTopicOptions, MessageHandler, ChatMemberUpdateHandler, GenericHandler, FilterFunction, UpdateType, ApiEndpoints, CallbackQueryHandler } from "./types";
+import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, CopyMessageOptions, AnswerCallbackQueryOptions, SetWebhookOptions, CreateForumTopicOptions, EditForumTopicOptions, MessageHandler, ChatMemberUpdateHandler, GenericHandler, FilterFunction, UpdateType, ApiEndpoints, CallbackQueryHandler, SendVideoOptions, SendStickerOptions, SendAudioOptions, ChatAction } from "./types";
 import { filters } from "./filters";
 import { ChatMemberUpdateContextImpl } from "./context/chatMemberUpdate"
 import { CallbackQueryContextImpl } from "./context/callbackQuery"
@@ -327,6 +327,67 @@ export class Bot {
       ...options,
     });
     return new MessageInstance(this, result);
+  }
+
+  /**
+   * Send a video to a chat
+   * @param chatId Chat ID to send video to
+   * @param video Video to send (file ID or URL)
+   * @param options Additional options for sending the video
+   * @returns The sent message
+   */
+  async sendVideo(chatId: number | string, video: string, options: SendVideoOptions = {}): Promise<MessageInstance> {
+    const result = await this._callApi<Message>("sendVideo", {
+      chat_id: chatId,
+      video,
+      ...options,
+    });
+    return new MessageInstance(this, result);
+  }
+
+  /**
+   * Send a sticker to a chat
+   * @param chatId Chat ID to send sticker to
+   * @param sticker Sticker to send (file ID or URL)
+   * @param options Additional options for sending the sticker
+   * @returns The sent message
+   */
+  async sendSticker(chatId: number | string, sticker: string, options: SendStickerOptions = {}): Promise<MessageInstance> {
+    const result = await this._callApi<Message>("sendSticker", {
+      chat_id: chatId,
+      sticker,
+      ...options,
+    });
+    return new MessageInstance(this, result);
+  }
+
+  /**
+   * Send an audio file to a chat
+   * @param chatId Chat ID to send audio to
+   * @param audio Audio to send (file ID or URL)
+   * @param options Additional options for sending the audio
+   * @returns The sent message
+   */
+  async sendAudio(chatId: number | string, audio: string, options: SendAudioOptions = {}): Promise<MessageInstance> {
+    const result = await this._callApi<Message>("sendAudio", {
+      chat_id: chatId,
+      audio,
+      ...options,
+    });
+    return new MessageInstance(this, result);
+  }
+
+  /**
+   * Send a chat action to a chat
+   * @param chatId Chat ID to send action to
+   * @param action Type of action to broadcast
+   * @returns True on success
+   */
+  async sendChatAction(chatId: number | string, action: ChatAction): Promise<boolean> {
+    return this._callApi<boolean>("sendChatAction", {
+      chat_id: chatId,
+      action,
+    });
   }
 
   /**

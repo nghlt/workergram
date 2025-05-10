@@ -217,13 +217,17 @@ The `Bot` class provides a comprehensive set of methods for interacting with the
 ### Core Methods
 
 **Handler Registration:**
-- `onCommand(command, handler, filter?)`: Register a handler for a specific command (NEW)
+- `onCommand(command, handler, filter?)`: Register a handler for a specific command
 - `onUpdate(event, handler, filter?)`: Register a handler for an update type
 - `processUpdate(update)`: Process a Telegram update object
+- `callApi(method, params?)`: Call the Telegram API directly
 
 **Message Methods:**
 - `sendMessage(chatId, text, options?)`: Send a text message to a chat
 - `sendPhoto(chatId, photo, options?)`: Send a photo to a chat
+- `sendVideo(chatId, video, options?)`: Send a video to a chat
+- `sendSticker(chatId, sticker, options?)`: Send a sticker to a chat
+- `sendAudio(chatId, audio, options?)`: Send an audio file to a chat
 - `sendDocument(chatId, document, options?)`: Send a document to a chat
 - `forwardMessage(chatId, fromChatId, messageId, options?)`: Forward a message
 - `copyMessage(chatId, fromChatId, messageId, options?)`: Copy a message
@@ -247,6 +251,7 @@ The `Bot` class provides a comprehensive set of methods for interacting with the
 - `unpinAllForumTopicMessages(chatId, messageThreadId)`: Unpin all messages
 - `hideGeneralForumTopic(chatId)`: Hide the general forum topic
 - `unhideGeneralForumTopic(chatId)`: Unhide the general forum topic
+- `getForumTopicIconStickers()`: Get available forum topic icon stickers
 
 **Webhook Methods:**
 - `setWebhook(url, options?)`: Set a webhook for updates
@@ -322,6 +327,11 @@ Used for handling message updates.
   - `topicId`: Topic ID for forum channels (if available)
   - `type`: Chat type (private, group, supergroup, channel)
   - `title`: Chat title (for groups, supergroups, channels)
+  - `username`: Chat username (if available)
+  - `firstName`: First name (for private chats)
+  - `lastName`: Last name (for private chats)
+  - `isForum`: Whether the chat is a forum
+  - `messageThreadId`: Message thread ID for forum topics
 - `message`: Structured message information object
   - `id`: Message ID
   - `text`: Message text
@@ -330,21 +340,36 @@ Used for handling message updates.
   - `date`: Message date
   - `isEdited`: Whether the message was edited
   - `type`: Type of message (text, photo, video, etc.)
+  - `photo`: Array of photo sizes (if message contains photo)
+  - `video`: Video information (if message contains video)
+  - `audio`: Audio information (if message contains audio)
+  - `document`: Document information (if message contains document)
+  - `sticker`: Sticker information (if message contains sticker)
+  - `voice`: Voice information (if message contains voice)
+  - `videoNote`: Video note information (if message contains video note)
+  - `animation`: Animation information (if message contains animation)
+  - `caption`: Caption text (for media messages)
 - All properties from BaseContext
 
 **Methods:**
 - `reply(text: string, options?: SendMessageOptions, asReply?: boolean)`: Reply to the current message (with optional quoting).
 - `editText(text: string, options?: SendMessageOptions)`: Edit the text of the current message.
-- `deleteMessage()`: Delete the current message (renamed from delete()).
+- `deleteMessage()`: Delete the current message.
 - `replyWithPhoto(photo: string, options?: SendPhotoOptions, asReply?: boolean)`: Send a photo in reply.
+- `replyWithVideo(video: string, options?: SendVideoOptions, asReply?: boolean)`: Send a video in reply.
+- `replyWithSticker(sticker: string, options?: SendStickerOptions, asReply?: boolean)`: Send a sticker in reply.
+- `replyWithAudio(audio: string, options?: SendAudioOptions, asReply?: boolean)`: Send an audio file in reply.
 - `replyWithDocument(document: string, options?: SendDocumentOptions, asReply?: boolean)`: Send a document in reply.
-- `forwardMessage(toChatId: number | string, options?: ForwardMessageOptions)`: Forward this message to another chat, returns `Promise<MessageInstance>`
-- `copyMessage(toChatId: number | string, options?: CopyMessageOptions)`: Copy this message to another chat, returns `Promise<{ message_id: number }>`
-- `getChat()`: Get information about the chat
-- `banChatMember(userId?: number, untilDate?: number, revokeMessages?: boolean)`: Ban a user
-- `unbanChatMember(userId?: number, onlyIfBanned?: boolean)`: Unban a user
-- `isChatMemberOf(chatId: number | string)`: Check if the user is a member of another chat
-- `restrictChatMember(permissions: ChatPermissions, untilDate?: number, chatId?: number)`: Restrict a user in the chat
+- `forwardMessage(toChatId: number | string, options?: ForwardMessageOptions)`: Forward this message to another chat.
+- `copyMessage(toChatId: number | string, options?: CopyMessageOptions)`: Copy this message to another chat.
+- `getChat()`: Get information about the chat.
+- `banChatMember(userId: number, untilDate?: number, revokeMessages?: boolean)`: Ban a user.
+- `unbanChatMember(userId: number, onlyIfBanned?: boolean)`: Unban a user.
+- `restrictChatMember(permissions: ChatPermissions, untilDate?: number)`: Restrict a user in the chat.
+- `isChatMemberOf(chatId: number | string)`: Check if the user is a member of another chat.
+- `getMediaFileId()`: Get the file ID of the media in the message.
+- `getCaption()`: Get the caption of the media message.
+- `getCaptionEntities()`: Get the caption entities of the media message.
 
 ### CallbackQueryContext
 

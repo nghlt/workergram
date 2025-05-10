@@ -13,6 +13,10 @@ import {
   CreateForumTopicOptions,
   EditForumTopicOptions,
   SetWebhookOptions,
+  SendVideoOptions,
+  SendStickerOptions,
+  SendAudioOptions,
+  ForwardMessageOptions,
 } from "./options";
 import { FilterFunction, MessageHandler, GenericHandler } from "./eventHandlers";
 import type { MessageInstance } from "../wrappers/messageInstance";
@@ -47,8 +51,11 @@ export interface BotInterface {
   // Messaging methods
   sendMessage(chatId: number | string, messageText: string, messageOptions?: SendMessageOptions): Promise<MessageInstance>;
   sendPhoto(chatId: number | string, photo: string, options?: SendPhotoOptions): Promise<MessageInstance>;
+  sendVideo(chatId: number | string, video: string, options?: SendVideoOptions): Promise<MessageInstance>;
+  sendSticker(chatId: number | string, sticker: string, options?: SendStickerOptions): Promise<MessageInstance>;
+  sendAudio(chatId: number | string, audio: string, options?: SendAudioOptions): Promise<MessageInstance>;
   sendDocument(chatId: number | string, document: string, options?: SendDocumentOptions): Promise<MessageInstance>;
-  forwardMessage(chatId: number | string, fromChatId: number | string, messageId: number, options?: any): Promise<MessageInstance>;
+  forwardMessage(chatId: number | string, fromChatId: number | string, messageId: number, options?: ForwardMessageOptions): Promise<MessageInstance>;
   copyMessage(chatId: number | string, fromChatId: number | string, messageId: number, options?: CopyMessageOptions): Promise<{ message_id: number }>;
 
   // Interactive methods

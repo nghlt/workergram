@@ -3,12 +3,11 @@
  * Provides EditedMessageContextImpl for handling 'edited_message' updates in Workergram.
  */
 
-import { Message, Update, Chat, ChatMember, ChatPermissions } from "@grammyjs/types";
-import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, ForwardMessageOptions, CopyMessageOptions } from "../types/options";
-import { EditedMessageContext, UserInfo, ChatInfo, MessageInfo } from "../types/context";
-import { BotInterface } from "../types/bot";
+import { Update, Chat, ChatMember, ChatPermissions } from "@grammyjs/types";
+import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, ForwardMessageOptions, CopyMessageOptions, EditedMessageContext, UserInfo, ChatInfo, MessageInfo, BotInterface } from "../types";
 import { BaseContextImpl } from "./base";
 import { MessageInstance } from "../wrappers/messageInstance";
+import { determineMessageType } from "../utils";
 
 /**
  * Context class for edited message updates
@@ -68,7 +67,8 @@ export class EditedMessageContextImpl extends BaseContextImpl implements EditedM
             id: editedMessage.chat.id,
             topicId: editedMessage.message_thread_id,
             type: editedMessage.chat.type,
-            title: editedMessage.chat.title
+            title: editedMessage.chat.title,
+            isForum: editedMessage.chat.is_forum || false
         };
         
         // Create message object
@@ -76,7 +76,8 @@ export class EditedMessageContextImpl extends BaseContextImpl implements EditedM
             id: editedMessage.message_id,
             text: editedMessage.text,
             date: editedMessage.date,
-            isEdited: true // This is an edited message
+            isEdited: true, // This is an edited message
+            type: determineMessageType(editedMessage)
         };
     }
 

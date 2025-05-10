@@ -94,6 +94,61 @@ export interface EditForumTopicOptions {
   icon_custom_emoji_id?: string;
 }
 
+export interface SendVideoOptions {
+  message_thread_id?: number; // Forum topic identifier
+  duration?: number;
+  width?: number;
+  height?: number;
+  thumb?: string;
+  caption?: string;
+  parse_mode?: "Markdown" | "MarkdownV2" | "HTML";
+  caption_entities?: MessageEntities;
+  supports_streaming?: boolean;
+  disable_notification?: boolean;
+  protect_content?: boolean;
+  reply_to_message_id?: number;
+  allow_sending_without_reply?: boolean;
+  reply_markup?: ReplyMarkup;
+}
+
+export interface SendStickerOptions {
+  message_thread_id?: number; // Forum topic identifier
+  disable_notification?: boolean;
+  protect_content?: boolean;
+  reply_to_message_id?: number;
+  allow_sending_without_reply?: boolean;
+  reply_markup?: ReplyMarkup;
+}
+
+export interface SendAudioOptions {
+  message_thread_id?: number; // Forum topic identifier
+  caption?: string;
+  parse_mode?: "Markdown" | "MarkdownV2" | "HTML";
+  caption_entities?: MessageEntities;
+  duration?: number;
+  performer?: string;
+  title?: string;
+  thumb?: string;
+  disable_notification?: boolean;
+  protect_content?: boolean;
+  reply_to_message_id?: number;
+  allow_sending_without_reply?: boolean;
+  reply_markup?: ReplyMarkup;
+}
+
+export type ChatAction = 
+  | 'typing'
+  | 'upload_photo'
+  | 'record_video'
+  | 'upload_video'
+  | 'record_voice'
+  | 'upload_voice'
+  | 'upload_document'
+  | 'choose_sticker'
+  | 'find_location'
+  | 'record_video_note'
+  | 'upload_video_note';
+
 export interface AnswerInlineQueryOptions {
   cache_time?: number;
   is_personal?: boolean;

@@ -3,10 +3,10 @@
  * Provides ChatMemberUpdateContextImpl for handling 'chat_member' updates in Workergram.
  */
 
-import { ChatMemberUpdated, ChatMember, Update, User, Chat, Message, ChatPermissions } from "@grammyjs/types";
+import {  ChatMember, Update,ChatPermissions } from "@grammyjs/types";
 import { SendMessageOptions, ChatMemberUpdateContext, BotInterface, UserInfo, ChatInfo, MemberUpdateInfo } from "../types";
 import { BaseContextImpl } from "./base";
-import { MessageInstance } from "../wrappers/messageInstance";
+import { MessageInstance } from "../wrappers";
 
 /**
  * Context class for chat member updates
@@ -53,7 +53,8 @@ export class ChatMemberUpdateContextImpl extends BaseContextImpl implements Chat
         this.chat = {
             id: chatMemberUpdate.chat.id,
             type: chatMemberUpdate.chat.type,
-            title: chatMemberUpdate.chat.title
+            title: chatMemberUpdate.chat.title,
+            isForum: chatMemberUpdate.chat.is_forum || false
         };
         
         // Create member update object
