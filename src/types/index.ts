@@ -23,7 +23,8 @@ export {
   ForumTopic,
   Sticker,
   InlineQuery,
-  InlineQueryResult
+  InlineQueryResult,
+  MessageEntity,
 } from '@grammyjs/types'
 
 export * from './bot'

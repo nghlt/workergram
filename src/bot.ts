@@ -3,16 +3,40 @@
  * Main Bot class for interacting with the Telegram Bot API on Cloudflare Workers.
  * Provides methods to register update and command handlers and dispatch incoming updates.
  */
-import { Update, Message, User, ChatPermissions, WebhookInfo, ForumTopic, ChatMember, Chat } from "./types";
-import { Sticker } from "./types";
-import { ApiResponse } from "./types";
-import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, CopyMessageOptions, AnswerCallbackQueryOptions, SetWebhookOptions, CreateForumTopicOptions, EditForumTopicOptions, MessageHandler, ChatMemberUpdateHandler, GenericHandler, FilterFunction, UpdateType, ApiEndpoints, CallbackQueryHandler, SendVideoOptions, SendStickerOptions, SendAudioOptions, ChatAction, MediaInput } from "./types";
+import {
+  Update,
+  Message,
+  User,
+  ChatPermissions,
+  WebhookInfo,
+  ForumTopic,
+  ChatMember,
+  Chat,
+  Sticker,
+  ApiResponse,
+  SendMessageOptions,
+  SendPhotoOptions,
+  SendDocumentOptions,
+  CopyMessageOptions,
+  AnswerCallbackQueryOptions,
+  SetWebhookOptions,
+  CreateForumTopicOptions,
+  EditForumTopicOptions,
+  MessageHandler,
+  ChatMemberUpdateHandler,
+  GenericHandler,
+  FilterFunction,
+  UpdateType,
+  ApiEndpoints,
+  CallbackQueryHandler,
+  SendVideoOptions,
+  SendStickerOptions,
+  SendAudioOptions,
+  ChatAction,
+  MediaInput,
+} from "./types";
 import { filters } from "./filters";
-import { ChatMemberUpdateContextImpl } from "./context/chatMemberUpdate"
-import { CallbackQueryContextImpl } from "./context/callbackQuery"
-import { MessageContextImpl } from "./context/message"
-import { InlineQueryContextImpl } from "./context/inlineQuery"
-import { ChosenInlineResultContextImpl } from "./context/chosenInlineResult"
+import { ChatMemberUpdateContextImpl, CallbackQueryContextImpl, MessageContextImpl, InlineQueryContextImpl, ChosenInlineResultContextImpl } from "./context";
 import { MessageInstance } from "./wrappers/messageInstance";
 
 /**
@@ -62,12 +86,12 @@ export class Bot {
    * Register a handler for chat member updates
    */
   onUpdate(event: "chat_member", handler: ChatMemberUpdateHandler, filter?: FilterFunction): void;
-  
+
   /**
    * Register a handler for inline query updates
    */
   onUpdate(event: "inline_query", handler: GenericHandler<InlineQueryContextImpl>, filter?: FilterFunction): void;
-  
+
   /**
    * Register a handler for chosen inline result updates
    */
@@ -95,8 +119,7 @@ export class Bot {
       filter,
     });
   }
-  
-  
+
   /**
    * Register a handler for command messages
    * @param command The command to handle (without the leading slash)
@@ -106,9 +129,9 @@ export class Bot {
   onCommand(command: string, handler: MessageHandler, filter?: FilterFunction): void {
     // Combine the command filter with any additional filter if provided
     const commandFilter = filters.command(command);
-    
+
     let combinedFilter: FilterFunction | undefined;
-    
+
     if (filter) {
       combinedFilter = (update: Update) => {
         return commandFilter(update) && (filter ? filter(update) : true);
@@ -226,18 +249,18 @@ export class Bot {
    */
   private createFormData(params: Record<string, any>): FormData {
     const formData = new FormData();
-    
+
     for (const [key, value] of Object.entries(params)) {
       if (value instanceof ArrayBuffer || value instanceof Uint8Array) {
         // For direct file upload, we just send the binary data
         formData.append(key, new Blob([value]));
-      } else if (typeof value === 'object' && value !== null) {
+      } else if (typeof value === "object" && value !== null) {
         formData.append(key, JSON.stringify(value));
       } else {
         formData.append(key, String(value));
       }
     }
-    
+
     return formData;
   }
 
@@ -251,10 +274,7 @@ export class Bot {
     const url = `${this.baseUrl}/${method}`;
 
     // Check if we need to use FormData (if any parameter is binary data)
-    const hasFile = Object.values(params).some(value => 
-      value instanceof ArrayBuffer || 
-      value instanceof Uint8Array
-    );
+    const hasFile = Object.values(params).some((value) => value instanceof ArrayBuffer || value instanceof Uint8Array);
 
     let response: Response;
     if (hasFile) {

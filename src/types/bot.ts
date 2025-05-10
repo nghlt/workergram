@@ -3,7 +3,7 @@
  * Defines BotInterface, API endpoints, and update types for Workergram.
  */
 
-import { Message, ChatPermissions, WebhookInfo, User, ChatMember, Sticker, ForumTopic, Chat } from "@grammyjs/types";
+import {  ChatPermissions, WebhookInfo, User, ChatMember, Sticker, ForumTopic, Chat } from "@grammyjs/types";
 import {
   SendMessageOptions,
   SendPhotoOptions,
@@ -18,6 +18,7 @@ import {
   SendAudioOptions,
   ForwardMessageOptions,
   MediaInput,
+  ChatAction,
 } from "./options";
 import { FilterFunction, MessageHandler, GenericHandler } from "./eventHandlers";
 import type { MessageInstance } from "../wrappers/messageInstance";
@@ -58,6 +59,7 @@ export interface BotInterface {
   sendDocument(chatId: number | string, document: MediaInput, options?: SendDocumentOptions): Promise<MessageInstance>;
   forwardMessage(chatId: number | string, fromChatId: number | string, messageId: number, options?: ForwardMessageOptions): Promise<MessageInstance>;
   copyMessage(chatId: number | string, fromChatId: number | string, messageId: number, options?: CopyMessageOptions): Promise<{ message_id: number }>;
+  sendChatAction(chatId: number | string, action: ChatAction): Promise<boolean>;
 
   // Interactive methods
   answerCallbackQuery(callbackQueryId: string, options?: AnswerCallbackQueryOptions): Promise<boolean>;

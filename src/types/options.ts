@@ -3,9 +3,12 @@
  * Defines option interfaces for various Telegram API methods in Workergram, including send, forward, and callback query options.
  */
 
-import { MessageEntity } from "@grammyjs/types";
+ 
 import { MessageEntities } from "./entitites";
 import { ReplyMarkup } from "./markup";
+
+
+
 
 
 // API options types
