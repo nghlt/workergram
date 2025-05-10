@@ -96,8 +96,9 @@ export interface WorkergramAnimation {
   thumbnail?: WorkergramPhotoSize;
   caption?: WorkergramCaption;
 } 
+export type MimeType = "image/jpeg" | "image/png" | "image/gif" | "image/webp" | "video/mp4" | "audio/mpeg" | "application/pdf" | "application/msword" | "application/vnd.openxmlformats-officedocument.wordprocessingml.document" | "application/vnd.ms-excel" | "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" | "application/zip" | "application/json" | "text/plain" | "text/html" | "text/css" | "text/javascript" | "application/octet-stream";
 
-export const MimeTypes: Record<string, string> = {
+export const MimeTypes: Record<string, MimeType> = {
   jpg: "image/jpeg",
   jpeg: "image/jpeg",
   png: "image/png",
@@ -116,4 +117,5 @@ export const MimeTypes: Record<string, string> = {
   html: "text/html",
   css: "text/css",
   js: "text/javascript",
+  other: "application/octet-stream",
 }

@@ -6,7 +6,7 @@
 
 import { MessageEntities } from "./entitites";
 import { ReplyMarkup } from "./markup";
-import { MimeTypes } from "./media";
+import { MimeType } from "./media";
 
 
 
@@ -31,7 +31,7 @@ export interface SendMessageOptions {
 
 export interface FileInput {
   buffer: ArrayBuffer;
-  mimeType: "image/jpeg" | "image/png" | "image/gif" | "video/mp4" | "audio/mpeg" | "application/pdf" | "application/msword" | "application/vnd.openxmlformats-officedocument.wordprocessingml.document" | "application/vnd.ms-excel" | "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" | "application/zip" | "application/json" | "text/plain" | "text/html" | "text/css" | "text/javascript" | "application/octet-stream";
+  mimeType: MimeType;
   fileName: string;
 }
 
