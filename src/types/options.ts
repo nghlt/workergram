@@ -22,6 +22,15 @@ export interface SendMessageOptions {
   reply_markup?: ReplyMarkup;
 }
 
+/**
+ * Represents a file to be sent to Telegram
+ * Can be:
+ * 1. file_id (string) - for files already on Telegram servers
+ * 2. URL (string) - for files to be downloaded by Telegram (max 5MB for photos, 20MB for other files)
+ * 3. File data (ArrayBuffer/Uint8Array) - for direct upload (max 10MB for photos, 50MB for other files)
+ */
+export type MediaInput = string | ArrayBuffer | Uint8Array;
+
 export interface SendPhotoOptions {
   message_thread_id?: number; // Forum topic identifier
   caption?: string;
@@ -37,7 +46,7 @@ export interface SendPhotoOptions {
 
 export interface SendDocumentOptions {
   message_thread_id?: number; // Forum topic identifier
-  thumbnail?: string;
+  thumbnail?: MediaInput;
   caption?: string;
   parse_mode?: "Markdown" | "MarkdownV2" | "HTML";
   caption_entities?: MessageEntities;
@@ -99,7 +108,7 @@ export interface SendVideoOptions {
   duration?: number;
   width?: number;
   height?: number;
-  thumb?: string;
+  thumb?: MediaInput;
   caption?: string;
   parse_mode?: "Markdown" | "MarkdownV2" | "HTML";
   caption_entities?: MessageEntities;

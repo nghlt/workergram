@@ -30,6 +30,7 @@ import {
   SendStickerOptions,
   SendAudioOptions,
   ForwardMessageOptions,
+  MediaInput,
 } from "./options";
 import type { MessageInstance } from "../wrappers/messageInstance";
 import { MessageEntities } from "./entitites";
@@ -138,11 +139,11 @@ export interface MessageContext extends BaseContext {
   reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<MessageInstance>;
   editText(messageText: string, messageOptions?: SendMessageOptions): Promise<MessageInstance | boolean>;
   deleteMessage(): Promise<boolean>;
-  replyWithPhoto(photo: string, options?: SendPhotoOptions, asReply?: boolean): Promise<MessageInstance>;
-  replyWithVideo(video: string, options?: SendVideoOptions, asReply?: boolean): Promise<MessageInstance>;
-  replyWithSticker(sticker: string, options?: SendStickerOptions, asReply?: boolean): Promise<MessageInstance>;
-  replyWithAudio(audio: string, options?: SendAudioOptions, asReply?: boolean): Promise<MessageInstance>;
-  replyWithDocument(document: string, options?: SendDocumentOptions, asReply?: boolean): Promise<MessageInstance>;
+  replyWithPhoto(photo: MediaInput, options?: SendPhotoOptions, asReply?: boolean): Promise<MessageInstance>;
+  replyWithVideo(video: MediaInput, options?: SendVideoOptions, asReply?: boolean): Promise<MessageInstance>;
+  replyWithSticker(sticker: MediaInput, options?: SendStickerOptions, asReply?: boolean): Promise<MessageInstance>;
+  replyWithAudio(audio: MediaInput, options?: SendAudioOptions, asReply?: boolean): Promise<MessageInstance>;
+  replyWithDocument(document: MediaInput, options?: SendDocumentOptions, asReply?: boolean): Promise<MessageInstance>;
   forwardMessage(toChatId: number | string, options?: ForwardMessageOptions): Promise<MessageInstance>;
   copyMessage(toChatId: number | string, options?: CopyMessageOptions): Promise<{ message_id: number }>;
   getChat(): Promise<Chat>;

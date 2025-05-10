@@ -6,7 +6,7 @@
 import { Update, Message, User, ChatPermissions, WebhookInfo, ForumTopic, ChatMember, Chat } from "./types";
 import { Sticker } from "./types";
 import { ApiResponse } from "./types";
-import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, CopyMessageOptions, AnswerCallbackQueryOptions, SetWebhookOptions, CreateForumTopicOptions, EditForumTopicOptions, MessageHandler, ChatMemberUpdateHandler, GenericHandler, FilterFunction, UpdateType, ApiEndpoints, CallbackQueryHandler, SendVideoOptions, SendStickerOptions, SendAudioOptions, ChatAction } from "./types";
+import { SendMessageOptions, SendPhotoOptions, SendDocumentOptions, CopyMessageOptions, AnswerCallbackQueryOptions, SetWebhookOptions, CreateForumTopicOptions, EditForumTopicOptions, MessageHandler, ChatMemberUpdateHandler, GenericHandler, FilterFunction, UpdateType, ApiEndpoints, CallbackQueryHandler, SendVideoOptions, SendStickerOptions, SendAudioOptions, ChatAction, MediaInput } from "./types";
 import { filters } from "./filters";
 import { ChatMemberUpdateContextImpl } from "./context/chatMemberUpdate"
 import { CallbackQueryContextImpl } from "./context/callbackQuery"
@@ -220,13 +220,25 @@ export class Bot {
   }
 
   /**
-   * Make a call to the Telegram Bot API (public version)
-   * @param method The API method to call
-   * @param params Parameters for the API call
-   * @returns The API response
+   * Helper method to create FormData for file uploads
+   * @param params Parameters to include in the form data
+   * @returns FormData object
    */
-  async callApi<T>(method: ApiEndpoints, params: Record<string, any> = {}): Promise<T> {
-    return this._callApi<T>(method, params);
+  private createFormData(params: Record<string, any>): FormData {
+    const formData = new FormData();
+    
+    for (const [key, value] of Object.entries(params)) {
+      if (value instanceof ArrayBuffer || value instanceof Uint8Array) {
+        // For direct file upload, we just send the binary data
+        formData.append(key, new Blob([value]));
+      } else if (typeof value === 'object' && value !== null) {
+        formData.append(key, JSON.stringify(value));
+      } else {
+        formData.append(key, String(value));
+      }
+    }
+    
+    return formData;
   }
 
   /**
@@ -238,19 +250,28 @@ export class Bot {
   private async _callApi<T>(method: ApiEndpoints, params: Record<string, any> = {}): Promise<T> {
     const url = `${this.baseUrl}/${method}`;
 
-    // We'll always use JSON for requests, as we've simplified file handling to use strings
-    // instead of File objects. FormData is still available through createFormData
-    // in the edge cases where it might be needed.
-    let response: Response;
+    // Check if we need to use FormData (if any parameter is binary data)
+    const hasFile = Object.values(params).some(value => 
+      value instanceof ArrayBuffer || 
+      value instanceof Uint8Array
+    );
 
-    // Use JSON for all requests as we've simplified file handling to use strings
-    response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(params),
-    });
+    let response: Response;
+    if (hasFile) {
+      const formData = this.createFormData(params);
+      response = await fetch(url, {
+        method: "POST",
+        body: formData,
+      });
+    } else {
+      response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(params),
+      });
+    }
 
     const result = (await response.json()) as ApiResponse<T>;
 
@@ -259,6 +280,16 @@ export class Bot {
     }
 
     return result.result as T;
+  }
+
+  /**
+   * Make a call to the Telegram Bot API (public version)
+   * @param method The API method to call
+   * @param params Parameters for the API call
+   * @returns The API response
+   */
+  async callApi<T>(method: ApiEndpoints, params: Record<string, any> = {}): Promise<T> {
+    return this._callApi<T>(method, params);
   }
 
   /**
@@ -316,11 +347,11 @@ export class Bot {
   /**
    * Send a photo to a chat
    * @param chatId Chat ID to send photo to
-   * @param photo Photo to send (file ID or URL)
+   * @param photo Photo to send (file ID, URL, or File/Blob)
    * @param options Additional options for sending the photo
    * @returns The sent message
    */
-  async sendPhoto(chatId: number | string, photo: string, options: SendPhotoOptions = {}): Promise<MessageInstance> {
+  async sendPhoto(chatId: number | string, photo: MediaInput, options: SendPhotoOptions = {}): Promise<MessageInstance> {
     const result = await this._callApi<Message>("sendPhoto", {
       chat_id: chatId,
       photo,
@@ -332,11 +363,11 @@ export class Bot {
   /**
    * Send a video to a chat
    * @param chatId Chat ID to send video to
-   * @param video Video to send (file ID or URL)
+   * @param video Video to send (file ID, URL, or File/Blob)
    * @param options Additional options for sending the video
    * @returns The sent message
    */
-  async sendVideo(chatId: number | string, video: string, options: SendVideoOptions = {}): Promise<MessageInstance> {
+  async sendVideo(chatId: number | string, video: MediaInput, options: SendVideoOptions = {}): Promise<MessageInstance> {
     const result = await this._callApi<Message>("sendVideo", {
       chat_id: chatId,
       video,
@@ -348,11 +379,11 @@ export class Bot {
   /**
    * Send a sticker to a chat
    * @param chatId Chat ID to send sticker to
-   * @param sticker Sticker to send (file ID or URL)
+   * @param sticker Sticker to send (file ID, URL, or File/Blob)
    * @param options Additional options for sending the sticker
    * @returns The sent message
    */
-  async sendSticker(chatId: number | string, sticker: string, options: SendStickerOptions = {}): Promise<MessageInstance> {
+  async sendSticker(chatId: number | string, sticker: MediaInput, options: SendStickerOptions = {}): Promise<MessageInstance> {
     const result = await this._callApi<Message>("sendSticker", {
       chat_id: chatId,
       sticker,
@@ -364,11 +395,11 @@ export class Bot {
   /**
    * Send an audio file to a chat
    * @param chatId Chat ID to send audio to
-   * @param audio Audio to send (file ID or URL)
+   * @param audio Audio to send (file ID, URL, or File/Blob)
    * @param options Additional options for sending the audio
    * @returns The sent message
    */
-  async sendAudio(chatId: number | string, audio: string, options: SendAudioOptions = {}): Promise<MessageInstance> {
+  async sendAudio(chatId: number | string, audio: MediaInput, options: SendAudioOptions = {}): Promise<MessageInstance> {
     const result = await this._callApi<Message>("sendAudio", {
       chat_id: chatId,
       audio,
@@ -393,11 +424,11 @@ export class Bot {
   /**
    * Send a document to a chat
    * @param chatId Chat ID to send document to
-   * @param document Document to send (file ID or URL)
+   * @param document Document to send (file ID, URL, or File/Blob)
    * @param options Additional options for sending the document
    * @returns The sent message
    */
-  async sendDocument(chatId: number | string, document: string, options: SendDocumentOptions = {}): Promise<MessageInstance> {
+  async sendDocument(chatId: number | string, document: MediaInput, options: SendDocumentOptions = {}): Promise<MessageInstance> {
     const result = await this._callApi<Message>("sendDocument", {
       chat_id: chatId,
       document,

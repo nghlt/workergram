@@ -17,6 +17,7 @@ import {
   SendStickerOptions,
   SendAudioOptions,
   ForwardMessageOptions,
+  MediaInput,
 } from "./options";
 import { FilterFunction, MessageHandler, GenericHandler } from "./eventHandlers";
 import type { MessageInstance } from "../wrappers/messageInstance";
@@ -50,11 +51,11 @@ export interface BotInterface {
   callApi<T>(method: ApiEndpoints, params?: Record<string, any>): Promise<T>;
   // Messaging methods
   sendMessage(chatId: number | string, messageText: string, messageOptions?: SendMessageOptions): Promise<MessageInstance>;
-  sendPhoto(chatId: number | string, photo: string, options?: SendPhotoOptions): Promise<MessageInstance>;
-  sendVideo(chatId: number | string, video: string, options?: SendVideoOptions): Promise<MessageInstance>;
-  sendSticker(chatId: number | string, sticker: string, options?: SendStickerOptions): Promise<MessageInstance>;
-  sendAudio(chatId: number | string, audio: string, options?: SendAudioOptions): Promise<MessageInstance>;
-  sendDocument(chatId: number | string, document: string, options?: SendDocumentOptions): Promise<MessageInstance>;
+  sendPhoto(chatId: number | string, photo: MediaInput, options?: SendPhotoOptions): Promise<MessageInstance>;
+  sendVideo(chatId: number | string, video: MediaInput, options?: SendVideoOptions): Promise<MessageInstance>;
+  sendSticker(chatId: number | string, sticker: MediaInput, options?: SendStickerOptions): Promise<MessageInstance>;
+  sendAudio(chatId: number | string, audio: MediaInput, options?: SendAudioOptions): Promise<MessageInstance>;
+  sendDocument(chatId: number | string, document: MediaInput, options?: SendDocumentOptions): Promise<MessageInstance>;
   forwardMessage(chatId: number | string, fromChatId: number | string, messageId: number, options?: ForwardMessageOptions): Promise<MessageInstance>;
   copyMessage(chatId: number | string, fromChatId: number | string, messageId: number, options?: CopyMessageOptions): Promise<{ message_id: number }>;
 

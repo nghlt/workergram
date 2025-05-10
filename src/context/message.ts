@@ -24,7 +24,8 @@ import {
   WorkergramDocument,
   WorkergramSticker, 
   WorkergramVideoNote,
-  WorkergramAnimation
+  WorkergramAnimation,
+  MediaInput
 } from "../types";
 
 /**
@@ -328,7 +329,7 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @param options Additional options for sending the photo
      * @param asReply Whether to quote the original message (default: false)
      */
-    async replyWithPhoto(photo: string, options: SendPhotoOptions = {}, asReply: boolean = false): Promise<MessageInstance> {
+    async replyWithPhoto(photo: MediaInput, options: SendPhotoOptions = {}, asReply: boolean = false): Promise<MessageInstance> {
         const photoOptions: SendPhotoOptions = { ...options };
         
         if (asReply) {
@@ -348,7 +349,7 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @param options Additional options for sending the document
      * @param asReply Whether to quote the original message (default: false)
      */
-    async replyWithDocument(document: string, options: SendDocumentOptions = {}, asReply: boolean = false): Promise<MessageInstance> {
+    async replyWithDocument(document: MediaInput, options: SendDocumentOptions = {}, asReply: boolean = false): Promise<MessageInstance> {
         const docOptions: SendDocumentOptions = { ...options };
         
         if (asReply) {
@@ -550,7 +551,7 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
     }
 
 
-    async replyWithVideo(video: string, options?: SendVideoOptions, asReply: boolean = true): Promise<MessageInstance> {
+    async replyWithVideo(video: MediaInput, options?: SendVideoOptions, asReply: boolean = true): Promise<MessageInstance> {
         const opts = { ...options };
         if (asReply) {
             opts.reply_to_message_id = this.messageId;
@@ -558,7 +559,7 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
         return this.bot.sendVideo(this.chatId, video, opts);
     }
 
-    async replyWithSticker(sticker: string, options?: SendStickerOptions, asReply: boolean = true): Promise<MessageInstance> {
+    async replyWithSticker(sticker: MediaInput, options?: SendStickerOptions, asReply: boolean = true): Promise<MessageInstance> {
         const opts = { ...options };
         if (asReply) {
             opts.reply_to_message_id = this.messageId;
@@ -566,7 +567,7 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
         return this.bot.sendSticker(this.chatId, sticker, opts);
     }
 
-    async replyWithAudio(audio: string, options?: SendAudioOptions, asReply: boolean = true): Promise<MessageInstance> {
+    async replyWithAudio(audio: MediaInput, options?: SendAudioOptions, asReply: boolean = true): Promise<MessageInstance> {
         const opts = { ...options };
         if (asReply) {
             opts.reply_to_message_id = this.messageId;

@@ -222,13 +222,22 @@ The `Bot` class provides a comprehensive set of methods for interacting with the
 - `processUpdate(update)`: Process a Telegram update object
 - `callApi(method, params?)`: Call the Telegram API directly
 
-**Message Methods:**
+**Messaging Methods:**
 - `sendMessage(chatId, text, options?)`: Send a text message to a chat
+
+**Media Methods:**
+All media sending methods (`sendPhoto`, `sendVideo`, `sendSticker`, `sendAudio`, `sendDocument`) accept a `MediaInput` parameter which can be:
+- `file_id` (string) - for files already on Telegram servers (no size limit)
+- URL (string) - for files to be downloaded by Telegram (max 5MB for photos, 20MB for other files)
+- ArrayBuffer/Uint8Array - for direct upload (max 10MB for photos, 50MB for other files)
+
 - `sendPhoto(chatId, photo, options?)`: Send a photo to a chat
 - `sendVideo(chatId, video, options?)`: Send a video to a chat
 - `sendSticker(chatId, sticker, options?)`: Send a sticker to a chat
 - `sendAudio(chatId, audio, options?)`: Send an audio file to a chat
 - `sendDocument(chatId, document, options?)`: Send a document to a chat
+
+**Message Management Methods:**
 - `forwardMessage(chatId, fromChatId, messageId, options?)`: Forward a message
 - `copyMessage(chatId, fromChatId, messageId, options?)`: Copy a message
 
@@ -355,11 +364,11 @@ Used for handling message updates.
 - `reply(text: string, options?: SendMessageOptions, asReply?: boolean)`: Reply to the current message (with optional quoting).
 - `editText(text: string, options?: SendMessageOptions)`: Edit the text of the current message.
 - `deleteMessage()`: Delete the current message.
-- `replyWithPhoto(photo: string, options?: SendPhotoOptions, asReply?: boolean)`: Send a photo in reply.
-- `replyWithVideo(video: string, options?: SendVideoOptions, asReply?: boolean)`: Send a video in reply.
-- `replyWithSticker(sticker: string, options?: SendStickerOptions, asReply?: boolean)`: Send a sticker in reply.
-- `replyWithAudio(audio: string, options?: SendAudioOptions, asReply?: boolean)`: Send an audio file in reply.
-- `replyWithDocument(document: string, options?: SendDocumentOptions, asReply?: boolean)`: Send a document in reply.
+- `replyWithPhoto(photo: MediaInput, options?: SendPhotoOptions, asReply?: boolean)`: Send a photo in reply.
+- `replyWithVideo(video: MediaInput, options?: SendVideoOptions, asReply?: boolean)`: Send a video in reply.
+- `replyWithSticker(sticker: MediaInput, options?: SendStickerOptions, asReply?: boolean)`: Send a sticker in reply.
+- `replyWithAudio(audio: MediaInput, options?: SendAudioOptions, asReply?: boolean)`: Send an audio file in reply.
+- `replyWithDocument(document: MediaInput, options?: SendDocumentOptions, asReply?: boolean)`: Send a document in reply.
 - `forwardMessage(toChatId: number | string, options?: ForwardMessageOptions)`: Forward this message to another chat.
 - `copyMessage(toChatId: number | string, options?: CopyMessageOptions)`: Copy this message to another chat.
 - `getChat()`: Get information about the chat.
