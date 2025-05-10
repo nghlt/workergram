@@ -111,7 +111,7 @@ export interface SendVideoOptions {
   duration?: number;
   width?: number;
   height?: number;
-  thumb?: MediaInput;
+  thumbnail?: MediaInput;
   caption?: string;
   parse_mode?: "Markdown" | "MarkdownV2" | "HTML";
   caption_entities?: MessageEntities;
@@ -140,7 +140,7 @@ export interface SendAudioOptions {
   duration?: number;
   performer?: string;
   title?: string;
-  thumb?: string;
+  thumbnail?: MediaInput;
   disable_notification?: boolean;
   protect_content?: boolean;
   reply_to_message_id?: number;
