@@ -37,13 +37,32 @@ export const filters = {
 
   /**
    * Filter for commands
-   * @param command The command to match (without /)
+   * @param command The command to match (without /) or a RegExp pattern to match against the command
+   * @example
+   * // Match exact command "/start"
+   * filters.command('start')
+   * 
+   * // Match commands starting with 'help' using regex
+   * filters.command(/^help/)
    */
-  command: (command: string): FilterFunction =>
+  command: (command: string | RegExp): FilterFunction =>
     withEvents(
       (update) => {
         if (!("message" in update) || typeof update.message?.text !== "string") return false;
-        return new RegExp(`^\\/${command}(?:@\\w+)?(?:\\s|$)`).test(update.message.text);
+        
+        const messageText = update.message.text;
+        
+        // Handle RegExp pattern
+        if (command instanceof RegExp) {
+          // Extract command part (without / and bot mention)
+          const commandMatch = messageText.match(/^\/([^\s@]+)(?:@\S+)?(?:\s|$)/);
+          if (!commandMatch) return false;
+          const commandText = commandMatch[1];
+          return command.test(commandText);
+        }
+        
+        // Handle string command (backward compatible)
+        return new RegExp(`^\\/${command}(?:@\\w+)?(?:\\s|$)`).test(messageText);
       },
       ["message"]
     ),

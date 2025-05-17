@@ -226,10 +226,7 @@ The `Bot` class provides a comprehensive set of methods for interacting with the
 - `sendMessage(chatId, text, options?)`: Send a text message to a chat
 
 **Media Methods:**
-All media sending methods (`sendPhoto`, `sendVideo`, `sendSticker`, `sendAudio`, `sendDocument`) accept a `MediaInput` parameter which can be:
-- `file_id` (string) - for files already on Telegram servers (no size limit)
-- URL (string) - for files to be downloaded by Telegram (max 5MB for photos, 20MB for other files)
-- ArrayBuffer/Uint8Array - for direct upload (max 10MB for photos, 50MB for other files)
+All media sending methods (`sendPhoto`, `sendVideo`, `sendSticker`, `sendAudio`, `sendDocument`) accept a `MediaInput` parameter.
 
 - `sendPhoto(chatId, photo, options?)`: Send a photo to a chat
 - `sendVideo(chatId, video, options?)`: Send a video to a chat
