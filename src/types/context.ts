@@ -138,14 +138,14 @@ export interface MessageContext extends BaseContext {
   // Message-specific methods
   reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<MessageInstance>;
   editText(messageText: string, messageOptions?: SendMessageOptions): Promise<MessageInstance | boolean>;
-  deleteMessage(): Promise<boolean>;
+  deleteMessage(): Promise<MessageInstance>;
   replyWithPhoto(photo: MediaInput, options?: SendPhotoOptions, asReply?: boolean): Promise<MessageInstance>;
   replyWithVideo(video: MediaInput, options?: SendVideoOptions, asReply?: boolean): Promise<MessageInstance>;
   replyWithSticker(sticker: MediaInput, options?: SendStickerOptions, asReply?: boolean): Promise<MessageInstance>;
   replyWithAudio(audio: MediaInput, options?: SendAudioOptions, asReply?: boolean): Promise<MessageInstance>;
   replyWithDocument(document: MediaInput, options?: SendDocumentOptions, asReply?: boolean): Promise<MessageInstance>;
   forwardMessage(toChatId: number | string, options?: ForwardMessageOptions): Promise<MessageInstance>;
-  copyMessage(toChatId: number | string, options?: CopyMessageOptions): Promise<{ message_id: number }>;
+  copyMessage(toChatId: number | string, options?: CopyMessageOptions): Promise<MessageInstance>;
   getChat(): Promise<Chat>;
   banChatMember(userId: number, untilDate?: number, revokeMessages?: boolean): Promise<boolean>;
   unbanChatMember(userId: number, onlyIfBanned?: boolean): Promise<boolean>;
@@ -180,7 +180,7 @@ export interface CallbackQueryContext extends BaseContext {
   reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<MessageInstance>;
   editText(messageText: string, messageOptions?: SendMessageOptions): Promise<MessageInstance | boolean>;
   editReplyMarkup(replyMarkup: any, options?: any): Promise<MessageInstance | boolean>;
-  deleteMessage(): Promise<boolean>;
+  deleteMessage(): Promise<MessageInstance>;
   reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<MessageInstance>;
   isChatMemberOf(chatId: number | string, userId?: number): Promise<ChatMember>;
   restrictChatMember(permissions: ChatPermissions, untilDate?: number, chatId?: number): Promise<boolean>;
@@ -200,11 +200,11 @@ export interface EditedMessageContext extends BaseContext {
 
   // Message specific methods
   reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<MessageInstance>;
-  deleteMessage(): Promise<boolean>;
+  deleteMessage(): Promise<MessageInstance>;
   replyWithPhoto(photo: string, options?: SendPhotoOptions, asReply?: boolean): Promise<MessageInstance>;
   replyWithDocument(document: string, options?: SendDocumentOptions, asReply?: boolean): Promise<MessageInstance>;
   forwardMessage(toChatId: number | string, options?: any): Promise<MessageInstance>;
-  copyMessage(toChatId: number | string, options?: CopyMessageOptions): Promise<{ message_id: number }>;
+  copyMessage(toChatId: number | string, options?: CopyMessageOptions): Promise<MessageInstance>;
   getChat(): Promise<Chat>;
   isChatMemberOf(chatId: number | string, userId?: number): Promise<ChatMember>;
   restrictChatMember(permissions: ChatPermissions, untilDate?: number, chatId?: number): Promise<boolean>;

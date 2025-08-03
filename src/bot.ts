@@ -365,14 +365,28 @@ export class Bot {
    * @param options Additional options for copying the message
    * @returns The message ID of the copied message
    */
-  async copyMessage(chatId: number | string, fromChatId: number | string, messageId: number, options?: CopyMessageOptions): Promise<{ message_id: number }> {
-    const result = await this.callApi<{ message_id: number }>("copyMessage", {
+  async copyMessage(chatId: number | string, fromChatId: number | string, messageId: number, options?: CopyMessageOptions): Promise<MessageInstance> {
+    const result = await this.callApi<Message>("copyMessage", {
       chat_id: chatId,
       from_chat_id: fromChatId,
       message_id: messageId,
       ...options,
     });
-    return result; // Return the whole object, not just the message_id
+    return new MessageInstance(this, result);
+  }
+
+  /**
+   * Delete a message from a chat
+   * @param chatId Chat ID to delete message from
+   * @param messageId Message ID to delete
+   * @returns The deleted message
+   */
+  async deleteMessage(chatId: number | string, messageId: number): Promise<MessageInstance> {
+    const result = await this._callApi<Message>("deleteMessage", {
+      chat_id: chatId,
+      message_id: messageId,
+    });
+    return new MessageInstance(this, result);
   }
 
   /**

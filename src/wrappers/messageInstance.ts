@@ -35,11 +35,8 @@ export class MessageInstance {
   }
 
   /** Delete this message */
-  async delete(): Promise<boolean> {
-    return this.bot.callApi<boolean>("deleteMessage", {
-      chat_id: this.chatId,
-      message_id: this.messageId,
-    });
+  async delete(): Promise<MessageInstance> {
+    return this.bot.deleteMessage(this.chatId, this.messageId)
   }
 
   /** Reply to this message */
@@ -75,23 +72,11 @@ export class MessageInstance {
 
   /** Forward this message to another chat */
   async forward(toChatId: number | string, options: Record<string, any> = {}): Promise<MessageInstance> {
-    const result = await this.bot.callApi<Message>("forwardMessage", {
-      chat_id: toChatId,
-      from_chat_id: this.chatId,
-      message_id: this.messageId,
-      ...options,
-    });
-    return new MessageInstance(this.bot, result);
+    return await this.bot.forwardMessage(toChatId, this.chatId, this.messageId, options);
   }
 
-  /** Copy this message to another chat. Returns the new message ID. */
-  async copy(toChatId: number | string, options: Record<string, any> = {}): Promise<number> {
-    const result = await this.bot.callApi<{ message_id: number }>("copyMessage", {
-      chat_id: toChatId,
-      from_chat_id: this.chatId,
-      message_id: this.messageId,
-      ...options,
-    });
-    return result.message_id;
+  /** Copy this message to another chat. Returns the new message. */
+  async copy(toChatId: number | string, options: Record<string, any> = {}): Promise<MessageInstance> {
+    return await this.bot.copyMessage(toChatId, this.chatId, this.messageId, options);
   }
 }

@@ -58,7 +58,8 @@ export interface BotInterface {
   sendAudio(chatId: number | string, audio: MediaInput, options?: SendAudioOptions): Promise<MessageInstance>;
   sendDocument(chatId: number | string, document: MediaInput, options?: SendDocumentOptions): Promise<MessageInstance>;
   forwardMessage(chatId: number | string, fromChatId: number | string, messageId: number, options?: ForwardMessageOptions): Promise<MessageInstance>;
-  copyMessage(chatId: number | string, fromChatId: number | string, messageId: number, options?: CopyMessageOptions): Promise<{ message_id: number }>;
+  deleteMessage(chatId: number | string, messageId: number): Promise<MessageInstance>;
+  copyMessage(chatId: number | string, fromChatId: number | string, messageId: number, options?: CopyMessageOptions): Promise<MessageInstance>;
   sendChatAction(chatId: number | string, action: ChatAction): Promise<boolean>;
 
   // Interactive methods

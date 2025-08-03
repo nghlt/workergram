@@ -237,6 +237,7 @@ All media sending methods (`sendPhoto`, `sendVideo`, `sendSticker`, `sendAudio`,
 **Message Management Methods:**
 - `forwardMessage(chatId, fromChatId, messageId, options?)`: Forward a message
 - `copyMessage(chatId, fromChatId, messageId, options?)`: Copy a message
+- `deleteMessage(chatId, messageId)`: Delete a message
 
 **Interactive Methods:**
 - `answerCallbackQuery(callbackQueryId, options?)`: Answer a callback query
@@ -283,12 +284,12 @@ A wrapper class for Telegram messages returning `MessageInstance` when sending/e
 
 **Methods:**
 - `editText(text: string, options?: SendMessageOptions)`: Edit this message's text, returns `Promise<MessageInstance | boolean>`. `SendMessageOptions` includes `reply_markup?: ReplyMarkup`.
-- `delete()`: Delete this message, returns `Promise<boolean>`
+- `delete()`: Delete this message, returns `Promise<MessageInstance>`
 - `reply(text: string, options?: SendMessageOptions, asReply?: boolean)`: Reply to this message, returns `Promise<MessageInstance>`. `SendMessageOptions` includes `reply_markup?: ReplyMarkup`.
 - `replyWithPhoto(photo: string, options?: SendPhotoOptions, asReply?: boolean)`: Send a photo in reply, returns `Promise<MessageInstance>`. `SendPhotoOptions` includes `reply_markup?: ReplyMarkup`.
 - `replyWithDocument(document: string, options?: SendDocumentOptions, asReply?: boolean)`: Send a document in reply, returns `Promise<MessageInstance>`. `SendDocumentOptions` includes `reply_markup?: ReplyMarkup`.
 - `forward(toChatId: number | string, options?: ForwardMessageOptions)`: Forward this message to another chat, returns `Promise<MessageInstance>`
-- `copy(toChatId: number | string, options?: CopyMessageOptions)`: Copy this message to another chat, returns `Promise<{ message_id: number }>`
+- `copy(toChatId: number | string, options?: CopyMessageOptions)`: Copy this message to another chat, returns `Promise<MessageInstance>`
 
 ## Markup Types
 

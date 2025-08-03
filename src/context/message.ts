@@ -316,11 +316,8 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
     /**
      * Delete the current message
      */
-    async deleteMessage(): Promise<boolean> {
-        return this.bot.callApi<boolean>("deleteMessage", {
-            chatId: this.chatId,
-            messageId: this.messageId,
-        });
+    async deleteMessage(): Promise<MessageInstance> {
+        return this.bot.deleteMessage(this.chatId, this.messageId);
     }
 
     /**
@@ -378,10 +375,9 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
      * @param toChatId Target chat ID to copy the message to
      * @param options Additional options for copying the message
      */
-    async copyMessage(toChatId: number | string, options: CopyMessageOptions = {}): Promise<{ message_id: number; }> {
+    async copyMessage(toChatId: number | string, options: CopyMessageOptions = {}): Promise<MessageInstance> {
         const copyOptions: CopyMessageOptions = { ...options };
-        const result = await this.bot.copyMessage(toChatId, this.chatId, this.messageId, copyOptions);
-        return result;
+        return await this.bot.copyMessage(toChatId, this.chatId, this.messageId, copyOptions);
     }
 
     /**

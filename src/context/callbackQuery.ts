@@ -142,15 +142,12 @@ export class CallbackQueryContextImpl extends BaseContextImpl implements Callbac
     /**
      * Delete the associated message
      */
-    async deleteMessage(): Promise<boolean> {
+    async deleteMessage(): Promise<MessageInstance> {
         if (!this.chatId || !this.messageId) {
             throw new Error("Cannot delete message: no message in callback query");
         }
 
-        return this.bot.callApi("deleteMessage", {
-            chat_id: this.chatId,
-            message_id: this.messageId,
-        });
+        return this.bot.deleteMessage(this.chatId, this.messageId);
     }
 
     /**

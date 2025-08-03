@@ -107,11 +107,8 @@ export class EditedMessageContextImpl extends BaseContextImpl implements EditedM
     /**
      * Delete the edited message
      */
-    async deleteMessage(): Promise<boolean> {
-        return this.bot.callApi("deleteMessage", {
-            chat_id: this.chatId,
-            message_id: this.messageId,
-        });
+    async deleteMessage(): Promise<MessageInstance> {
+        return this.bot.deleteMessage(this.chatId, this.messageId);
     }
 
     /**
@@ -174,7 +171,7 @@ export class EditedMessageContextImpl extends BaseContextImpl implements EditedM
      * @param toChatId Target chat ID to copy the message to
      * @param options Additional options for copying the message
      */
-    async copyMessage(toChatId: number | string, options: CopyMessageOptions = {}): Promise<{ message_id: number; }> {
+    async copyMessage(toChatId: number | string, options: CopyMessageOptions = {}): Promise<MessageInstance> {
         return this.bot.copyMessage(toChatId, this.chatId, this.messageId, options);
     }
 
