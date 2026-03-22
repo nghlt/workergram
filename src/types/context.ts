@@ -15,6 +15,7 @@ import {
   InlineQueryResultPhoto,
   InlineQueryResultArticle,
   InlineQueryResult,
+  MessageOrigin,
 } from "@grammyjs/types";
 import { BotInterface, ForumTopic } from ".";
 import {
@@ -78,6 +79,7 @@ export interface MessageInfo {
   videoNote?: WorkergramVideoNote;
   animation?: WorkergramAnimation;
   caption?: string;
+  forwardOrigin?: MessageOrigin;
 }
 
 export interface CallbackInfo {
@@ -134,6 +136,7 @@ export interface MessageContext extends BaseContext {
   // Organized property groups
   chat: ChatInfo;
   message: MessageInfo;
+  replyToMessage?: MessageInfo;
 
   // Message-specific methods
   reply(messageText: string, messageOptions?: SendMessageOptions, asReply?: boolean): Promise<MessageInstance>;

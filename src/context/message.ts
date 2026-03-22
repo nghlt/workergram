@@ -42,6 +42,7 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
     // Organized property groups
     public readonly chat: ChatInfo;
     public readonly message: MessageInfo;
+    public readonly replyToMessage?: MessageInfo;
 
     constructor(bot: Bot, update: Update) {
         super(bot, update);
@@ -75,8 +76,26 @@ export class MessageContextImpl extends BaseContextImpl implements MessageContex
             date: message.date,
             isEdited: 'edit_date' in message,
             type,
+            forwardOrigin: message.forward_origin,
             ...mediaProperties,
         };
+
+        if (message.reply_to_message) {
+            const replyMsg = message.reply_to_message;
+            const replyType = this.determineMessageType(replyMsg);
+            const replyMediaProperties = this.extractMediaProperties(replyMsg);
+            this.replyToMessage = {
+                id: replyMsg.message_id,
+                text: replyMsg.text,
+                command: replyMsg.text?.startsWith('/') ? replyMsg.text.split(' ')[0].slice(1) : undefined,
+                commandPayload: replyMsg.text?.startsWith('/') ? replyMsg.text.split(' ').slice(1).join(' ') : undefined,
+                date: replyMsg.date,
+                isEdited: 'edit_date' in replyMsg,
+                type: replyType,
+                forwardOrigin: replyMsg.forward_origin,
+                ...replyMediaProperties,
+            };
+        }
     }
 
     private determineMessageType(message: Message): 'text' | 'photo' | 'video' | 'audio' | 'document' | 'sticker' | 'voice' | 'videoNote' | 'animation' {
