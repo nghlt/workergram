@@ -6,14 +6,29 @@ import { Update } from "@grammyjs/types";
 import { UpdateType } from "./bot";
 import { MessageContext, EditedMessageContext, CallbackQueryContext, ChatMemberUpdateContext } from "./context";
 
+// return types for handlers - controls fallthrough
+export type GenericHandlerReturnTypes =
+  | boolean
+  | undefined
+  | Promise<boolean | undefined>;
 
 // Event handlers
-export type GenericHandler<T> = (ctx: T) => any | Promise<any>;
+export type GenericHandler<T> = (ctx: T) => GenericHandlerReturnTypes;
 export type MessageHandler = GenericHandler<MessageContext>;
 export type EditedMessageHandler = GenericHandler<EditedMessageContext>;
 export type CallbackQueryHandler = GenericHandler<CallbackQueryContext>;
 export type ChatMemberUpdateHandler = GenericHandler<ChatMemberUpdateContext>;
+
+// Handler Union
+export type Handlers =
+  | MessageHandler
+  | EditedMessageHandler
+  | CallbackQueryHandler
+  | ChatMemberUpdateHandler;
+
 // Event filter types
-export type FilterFunction = ((update: Update) => boolean) & { compatibleEvents?: UpdateType[]; };
+export type FilterFunction = ((update: Update) => boolean) & {
+  compatibleEvents?: UpdateType[];
+};
 export type FilterObject = Record<string, any>;
 export type EventFilter = FilterFunction | FilterObject;
