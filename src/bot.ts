@@ -35,7 +35,8 @@ import {
   ChatAction,
   MediaInput,
   FileInput,
-  FILE_INPUT_KEYS
+  FILE_INPUT_KEYS,
+  Handlers
 } from "./types";
 import { filters } from "./filters";
 import { ChatMemberUpdateContextImpl, CallbackQueryContextImpl, MessageContextImpl, InlineQueryContextImpl, ChosenInlineResultContextImpl } from "./context";
@@ -51,7 +52,7 @@ export class Bot {
   private handlers: Map<
     string,
     Array<{
-      handler: any;
+      handler: Handlers;
       filter?: FilterFunction;
     }>
   >;
@@ -235,8 +236,10 @@ export class Bot {
             }
           }
 
-          // Execute the handler with the context
-          await handler(ctx);
+          // Execute the handler with the context - fallthrough only if handler returns true
+          const fallthrough = await handler(ctx);
+          if (!fallthrough) break;
+
         } catch (error) {
           console.error(`Error in ${updateType} handler:`, error);
         }
