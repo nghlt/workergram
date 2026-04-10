@@ -3,8 +3,6 @@
     "target": "esnext",
     "module": "esnext",
     "moduleResolution": "node",
-    "ignoreDeprecations": "6.0",
-
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -13,6 +11,10 @@
     "outDir": "./dist",
     "declaration": true
   },
-  "include": ["src"],
-  "exclude": ["node_modules"]
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
